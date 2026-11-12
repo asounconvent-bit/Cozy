@@ -75,6 +75,10 @@ a{color:var(--accent)}
 .btn.sm{min-height:2.25rem;padding:.35rem .85rem;font-size:.9375rem}
 .btn.block{width:100%}
 .btn.outline{border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.google{background:var(--surface);border-color:var(--line-strong);color:var(--ink);font-weight:500}
+.btn.google svg{width:20px;height:20px;flex:none}
+.divider{display:flex;align-items:center;gap:12px;color:var(--ink-2);font-size:.875rem}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -285,6 +289,8 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
     <label class="check" id="auConsentRow" hidden><input type="checkbox" id="auConsent"><span>ยินยอมให้ Cozy เก็บข้อมูลสุขภาพที่ฉันบันทึก เพื่อใช้แสดงผลในแอพนี้</span></label>
     <p class="small err" id="auErr" role="alert" hidden></p>
     <button class="btn primary block" id="auSubmit" type="submit">เข้าสู่ระบบ</button>
+    <div class="divider">หรือ</div>
+    <button type="button" class="btn google block" id="auGoogle" data-act="auth-google"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/></svg><span>เข้าสู่ระบบด้วย Google</span></button>
     <div class="inline" style="justify-content:space-between"><button type="button" class="linkbtn" id="auForgot" data-act="auth-forgot">ลืมรหัสผ่าน</button><button type="button" class="linkbtn" data-act="privacy">นโยบายความเป็นส่วนตัว</button></div>
   </form>
   <div class="inline wide" id="gateRetry" hidden><button type="button" class="btn primary" data-act="retry-load">ลองใหม่</button><button type="button" class="btn" data-act="signout">ออกจากระบบ</button></div>
@@ -1236,6 +1242,10 @@ function summaryText(logs, profile, today, A) {
     'auth/wrong-password': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
     'auth/user-not-found': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
     'auth/too-many-requests': 'ลองหลายครั้งเกินไป รอสักครู่แล้วลองใหม่',
+    'auth/popup-closed-by-user': 'ปิดหน้าต่างเข้าสู่ระบบก่อนเสร็จสิ้น ลองกดใหม่อีกครั้ง',
+    'auth/popup-blocked': 'เบราว์เซอร์บล็อกหน้าต่างป๊อปอัป กรุณาอนุญาตป๊อปอัปแล้วลองใหม่',
+    'auth/cancelled-popup-request': 'ยกเลิกการเข้าสู่ระบบ',
+    'auth/account-exists-with-different-credential': 'อีเมลนี้เคยสมัครด้วยวิธีอื่นไว้แล้ว',
     'auth/network-request-failed': 'เชื่อมต่ออินเทอร์เน็ตไม่ได้ ตรวจสัญญาณแล้วลองใหม่',
     'auth/operation-not-allowed': 'ระบบยังไม่ได้เปิดการเข้าสู่ระบบด้วยอีเมล เจ้าของแอพต้องเปิด Email/Password ใน Firebase ก่อน',
     'auth/unauthorized-domain': 'โดเมนของเว็บนี้ยังไม่ได้รับอนุญาตใน Firebase เจ้าของแอพต้องเพิ่มโดเมนใน Authorized domains',
@@ -1261,7 +1271,7 @@ function summaryText(logs, profile, today, A) {
       : st === 'in' ? (cloud.loadFailed ? 'โหลดข้อมูลของคุณไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วกด ลองใหม่' : 'กำลังโหลดข้อมูลของคุณ…') : '';
     msg.hidden = !text; msg.textContent = text;
     $('#authForm').hidden = !(st === 'out' || look);
-    $('#authForm').querySelectorAll('input, #auSubmit').forEach(el => { el.disabled = look; });
+    $('#authForm').querySelectorAll('input, #auSubmit, #auGoogle').forEach(el => { el.disabled = look; });
     $('#gateRetry').hidden = !(st === 'in' && cloud.loadFailed);
     $('#gateDemo').hidden = st === 'in';
     window.scrollTo(0, 0);
@@ -1281,6 +1291,21 @@ function summaryText(logs, profile, today, A) {
     } catch (e) {
       pendingConsent = false; freshLogin = false;
       authErr(AUTH_MSG[e && e.code] || 'ทำรายการไม่สำเร็จ ลองใหม่อีกครั้ง' + (e && e.code ? ' (' + e.code + ')' : ''));
+    }
+    btn.disabled = false;
+  }
+  async function signInGoogle() {
+    if (cloud.state !== 'out' || !cloud.fb) return;
+    const btn = $('#auGoogle');
+    authErr(''); btn.disabled = true; freshLogin = true;
+    try {
+      const provider = new cloud.fb.au.GoogleAuthProvider();
+      await cloud.fb.au.signInWithPopup(cloud.fb.auth, provider);
+    } catch (e) {
+      freshLogin = false;
+      if (e && e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        authErr(AUTH_MSG[e && e.code] || 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง' + (e && e.code ? ' (' + e.code + ')' : ''));
+      }
     }
     btn.disabled = false;
   }
@@ -1460,6 +1485,7 @@ function summaryText(logs, profile, today, A) {
     if (act === 'start') { demoMode = false; showGate(); }
     else if (act === 'demo') { demoMode = true; showApp(); if (location.hash && location.hash !== '#home') location.hash = '#home'; else go(); }
     else if (act === 'auth-mode') setAuthMode(t.dataset.mode);
+    else if (act === 'auth-google') signInGoogle();
     else if (act === 'auth-forgot') forgot();
     else if (act === 'privacy') openPrivacy();
     else if (act === 'sheet-close') closeSheets();
