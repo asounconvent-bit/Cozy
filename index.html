@@ -55,9 +55,13 @@ a{color:var(--accent)}
 :focus-visible{outline:3px solid var(--fertile);outline-offset:2px}
 
 .app{max-width:30rem;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 6rem}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-block:14px 10px;background:var(--bg)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 10px;background:var(--bg)}
 .brand{font-family:var(--font-display);font-weight:500;font-size:1.75rem;line-height:1.1;color:var(--accent)}
+.top-r{display:flex;align-items:center;gap:10px}
 .today{font-size:.875rem;color:var(--ink-2);text-align:right}
+.avatar-btn{appearance:none;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);width:2.35rem;height:2.35rem;border-radius:50%;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:500;font-size:.95rem;overflow:hidden;flex:none;transition:transform .12s}
+.avatar-btn:active{transform:scale(.94)}
+.avatar-btn img{width:100%;height:100%;object-fit:cover;display:block}
 .stack{display:flex;flex-direction:column;gap:16px}
 .inline{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .inline.wide>*{flex:1 1 9rem}
@@ -209,7 +213,7 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .composer{position:sticky;bottom:calc(4.4rem + env(safe-area-inset-bottom,0px));display:flex;gap:8px;padding-block:8px;background:var(--bg)}
 .composer .input{flex:1}
 
-/* me */
+/* me & account settings */
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
 .row label{flex:1;min-width:0;font-weight:500}
@@ -229,13 +233,30 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .pair-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .pair ul{margin:0;padding-left:1.25rem}
 
+.acct-hero{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.acct-pic{width:4.25rem;height:4.25rem;border-radius:50%;background:var(--accent-soft);border:2px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.65rem;font-weight:500;overflow:hidden;flex:none;position:relative}
+.acct-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.acct-meta{flex:1;min-width:0}
+.acct-name{font-family:var(--font-display);font-size:1.2rem;font-weight:500;line-height:1.3}
+.menu-list{display:flex;flex-direction:column}
+.menu-item{appearance:none;border:0;background:none;font:inherit;color:var(--ink);text-align:left;padding:13px 4px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;width:100%}
+.menu-item:last-child{border-bottom:0}
+.menu-item-l{display:flex;align-items:center;gap:12px;min-width:0}
+.menu-item-l svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.menu-item-t{display:flex;flex-direction:column;min-width:0}
+.menu-item-t strong{font-weight:500;font-size:.98rem}
+.menu-item-t span{font-size:.8125rem;color:var(--ink-2);overflow-wrap:anywhere}
+.menu-chev{color:var(--ink-2);font-size:1.2rem;flex:none}
+.dev-item{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.dev-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
 /* tab bar + toast */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .tabs-in{max-width:30rem;margin-inline:auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .tab{color:var(--ink-2);font-size:.8125rem;line-height:1.4;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;text-decoration:none;border-top:3px solid transparent;margin-top:-1px}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-current="page"]{color:var(--accent);font-weight:600;border-top-color:var(--accent)}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(5.4rem + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:.5rem 1rem;border-radius:999px;font-size:.9375rem;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(5.4rem + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:.5rem 1rem;border-radius:999px;font-size:.9375rem;z-index:40;max-width:calc(100% - 32px);text-align:center}
 /* login gate, sheets, Plus */
 .gate{max-width:26rem;margin-inline:auto;padding-block:max(24px,6vh) 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .brand.big{font-size:2.75rem}
@@ -256,7 +277,13 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 </head>
 <body>
 <div class="app" id="app" hidden>
-  <header class="top"><span class="brand">Cozy</span><span class="today" id="todayLabel"></span></header>
+  <header class="top">
+    <span class="brand">Cozy</span>
+    <div class="top-r">
+      <span class="today" id="todayLabel"></span>
+      <button type="button" class="avatar-btn" id="topAvatar" data-act="acct-open" aria-label="ตั้งค่าบัญชีและโปรไฟล์"></button>
+    </div>
+  </header>
   <div id="demoBar" class="demo" hidden><span>นี่คือข้อมูลตัวอย่าง</span><button type="button" class="btn sm outline" data-act="start">สมัคร / เข้าสู่ระบบ</button></div>
   <div id="syncBar" class="demo" role="status" hidden></div>
   <main>
@@ -297,6 +324,26 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
   <button type="button" class="btn block" id="gateDemo" data-act="demo">ดูตัวอย่างก่อน ยังไม่สมัคร</button>
 </div>
 
+<!-- Sheet: ตั้งชื่อเล่นตอนเปิดแอพครั้งแรก -->
+<div class="sheet" id="nickSheet" role="dialog" aria-modal="true" aria-labelledby="nickT" hidden>
+  <div class="sheet-in stack">
+    <h2 id="nickT">สวัสดีจ้ะ พี่โคซี่เอง 🌷</h2>
+    <p class="muted">อยากให้พี่โคซี่เรียกว่าอะไรดีจ๊ะ? (ใส่ชื่อเล่นได้เลย เปลี่ยนทีหลังได้ตลอดนะ)</p>
+    <div class="field">
+      <label class="label" for="welcomeNick">ชื่อเล่นของคุณ</label>
+      <input class="input" id="welcomeNick" placeholder="เช่น มายด์, น้ำ, เอย" maxlength="30" autocomplete="off">
+    </div>
+    <button type="button" class="btn primary block" data-act="save-welcome-nick">บันทึกชื่อเล่น</button>
+    <button type="button" class="btn block" data-act="skip-welcome-nick">ข้ามไปก่อน</button>
+  </div>
+</div>
+
+<!-- Sheet: เมนูโปรไฟล์ & การตั้งค่าบัญชี (มุมขวาบน) -->
+<div class="sheet" id="acctSheet" role="dialog" aria-modal="true" aria-labelledby="acctT" hidden>
+  <div class="sheet-in stack" id="acctSheetBody"></div>
+</div>
+
+<!-- Sheet: Cozy Plus -->
 <div class="sheet" id="plus" role="dialog" aria-modal="true" aria-labelledby="plusT" hidden>
   <div class="sheet-in stack">
     <h2 id="plusT">Cozy Plus</h2>
@@ -308,6 +355,8 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
     <button type="button" class="btn block" data-act="sheet-close" data-close>ไว้ก่อน</button>
   </div>
 </div>
+
+<!-- Sheet: Privacy -->
 <div class="sheet" id="privacy" role="dialog" aria-modal="true" aria-labelledby="privT" hidden>
   <div class="sheet-in stack">
     <h2 id="privT">นโยบายความเป็นส่วนตัว</h2>
@@ -315,6 +364,8 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
     <button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>
   </div>
 </div>
+
+<input type="file" id="avatarFile" accept="image/*" hidden>
 
 <nav class="tabs" id="tabs" aria-label="เมนูหลัก" hidden><div class="tabs-in">
   <a class="tab" href="#home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>หน้าหลัก</span></a>
@@ -363,7 +414,6 @@ function normEntry(e) {
   };
 }
 
-/* Bleeding days (flow >= light) no more than 3 days apart belong to one period. */
 function findPeriods(logs) {
   const days = Object.keys(logs).filter(k => (logs[k].flow || 0) >= 2).sort();
   const out = [];
@@ -434,7 +484,6 @@ function analyze(logs, profile, today) {
     : (bmi > 0 && bmi < 18.5 ? ' ดัชนีมวลกาย ' + bmi.toFixed(1) + ' ต่ำกว่าเกณฑ์ น้ำหนักตัวน้อยทำให้ประจำเดือนขาดได้' : '');
   const add = o => F.push(o);
 
-  /* emergency combinations in the last 3 days */
   const why = [];
   if (cnt(w3, e => e.pain >= 8 && (has(e, 'fever') || has(e, 'dizzy')))) why.push('ปวดท้องรุนแรงร่วมกับมีไข้หรือหน้ามืด');
   if (cnt(w3, e => has(e, 'oneside') && e.pain >= 7)) why.push('ปวดท้องน้อยข้างเดียวรุนแรง');
@@ -445,7 +494,6 @@ function analyze(logs, profile, today) {
     may: ['ท้องนอกมดลูก (ถ้าประจำเดือนขาดหรือมีโอกาสตั้งครรภ์)', 'ถุงน้ำรังไข่แตกหรือบิดขั้ว', 'อุ้งเชิงกรานอักเสบรุนแรง', 'ไส้ติ่งอักเสบ', 'เสียเลือดมากจนความดันตก'],
     todo: 'ไปห้องฉุกเฉินของโรงพยาบาลที่ใกล้ที่สุด หรือโทร 1669 ไม่ควรขับรถไปเองถ้าหน้ามืด' });
 
-  /* missed or late period */
   if (C.last) {
     if (C.cd > 90) {
       add({ id: 'amen', level: stopsBleeding ? 1 : 2, title: 'ประจำเดือนขาดมาเกิน 3 เดือน',
@@ -460,7 +508,6 @@ function analyze(logs, profile, today) {
     }
   }
 
-  /* cycle length pattern */
   if (nLong >= 2) add({ id: 'long', level: nLong >= 3 ? 2 : 1, title: 'รอบเดือนห่างกว่า 35 วัน ' + nLong + ' รอบ',
     found: 'ความยาวรอบล่าสุด: ' + C.recent.join(', ') + ' วัน' + bmiNote,
     may: ['ภาวะถุงน้ำรังไข่หลายใบ (PCOS)', 'ไทรอยด์ทำงานผิดปกติ', 'ฮอร์โมนโปรแลคตินสูง', 'ความเครียดหรือน้ำหนักเปลี่ยนมาก'],
@@ -485,7 +532,6 @@ function analyze(logs, profile, today) {
       todo: 'บันทึกต่อเนื่องเพื่อดูแนวโน้ม ถ้าไม่สม่ำเสมอเกิน 3 เดือนควรปรึกษาแพทย์' });
   }
 
-  /* duration and amount */
   const rp = C.P.filter(p => diff(today, p.end) <= 90);
   const longest = rp.reduce((m, p) => Math.max(m, p.len), 0);
   if (longest > 7) add({ id: 'prolong', level: 2, title: 'ประจำเดือนมานานเกิน 7 วัน',
@@ -505,7 +551,6 @@ function analyze(logs, profile, today) {
       todo: 'ควรพบแพทย์เพื่อหาสาเหตุและตรวจภาวะโลหิตจาง ถ้าหน้ามืด ใจสั่น หรือเหนื่อยง่าย ให้ไปโรงพยาบาลวันนี้' });
   }
 
-  /* bleeding outside the period */
   const imb = cnt(w60, (e, d) => (e.flow === 1 || e.dis === 'blood') && !inEp(d));
   if (imb) add({ id: 'imb', level: imb >= 3 ? 2 : 1, title: 'มีเลือดออกนอกรอบเดือน ' + imb + ' วัน',
     found: 'ใน 60 วันล่าสุด มีเลือดกะปริดกะปรอยหรือตกขาวปนเลือดในวันที่ไม่ใช่ช่วงประจำเดือน',
@@ -516,7 +561,6 @@ function analyze(logs, profile, today) {
     may: ['ปากมดลูกอักเสบ', 'ติ่งเนื้อปากมดลูก', 'ช่องคลอดแห้งหรือมีแผลถลอก', 'โรคติดต่อทางเพศสัมพันธ์', 'ความผิดปกติของเซลล์ปากมดลูก'],
     todo: 'ควรตรวจภายในและตรวจคัดกรองมะเร็งปากมดลูก แม้เกิดเพียงครั้งเดียว' });
 
-  /* pain */
   const n7 = cnt(w14, e => e.pain >= 7), n4 = cnt(w14, e => e.pain >= 4);
   const nOut = cnt(w30, (e, d) => e.pain >= 4 && !inEp(d));
   if (n7) add({ id: 'pain7', level: 2, title: 'มีวันที่ปวดมาก (ระดับ 7 ขึ้นไป)',
@@ -537,7 +581,6 @@ function analyze(logs, profile, today) {
     may: ['เยื่อบุโพรงมดลูกเจริญผิดที่', 'ช่องคลอดอักเสบหรือติดเชื้อ', 'อุ้งเชิงกรานอักเสบ', 'ช่องคลอดแห้ง'],
     todo: (nSex >= 3 || n7) ? 'เป็นซ้ำหรือมีปวดประจำเดือนมากร่วมด้วย ควรพบแพทย์' : 'ถ้าเป็นซ้ำ หรือเจ็บลึกในท้องน้อย ควรพบแพทย์' });
 
-  /* discharge */
   const isYG = e => e.dis === 'yg' || e.dis === 'gray';
   const nYG = cnt(w14, isYG), nOdor = cs(w14, 'odor');
   if (nYG || nOdor) {
@@ -567,7 +610,6 @@ function analyze(logs, profile, today) {
     may: ['กระเพาะปัสสาวะอักเสบ', 'โรคติดต่อทางเพศสัมพันธ์', 'ช่องคลอดอักเสบ'],
     todo: 'ดื่มน้ำมากๆ ไม่กลั้นปัสสาวะ ถ้าเป็นเกิน 2 วัน มีไข้ ปวดหลัง หรือปัสสาวะมีเลือด ควรพบแพทย์' });
 
-  /* hormones */
   const nHair = cs(w90, 'hair'), nAcne = cs(w90, 'acne'), nLoss = cs(w90, 'hairloss');
   const andro = nHair >= 2 || nAcne >= 7 || nLoss >= 3;
   const irreg = nLong >= 2 || (C.cd !== null && C.cd > 45) || (C.cycles.length < 2 && profLen > 35);
@@ -598,7 +640,6 @@ function analyze(logs, profile, today) {
   return { level: F.reduce((m, f) => Math.max(m, f.level), 0), urgent: F.some(f => f.urgent), findings: F, logged14: w14.length, cycle: C };
 }
 
-/* "Period hasn't come" guide: how long + ticked situations -> possible reasons and next steps. */
 const MISS_DUR = [['0', 'เลยกำหนดไม่กี่วัน'], ['1', 'ขาด 1-2 เดือน'], ['3', 'ขาด 3-5 เดือน'], ['6', 'ขาด 6 เดือนขึ้นไป']];
 const MISS_Q = [['sex', 'มีเพศสัมพันธ์ในช่วง 3 เดือนนี้'], ['contra', 'ใช้ยาคุมแบบฉีด ฝัง หรือห่วงฮอร์โมน'], ['pill', 'กินยาคุมอยู่หรือเพิ่งหยุดกิน'], ['bf', 'ให้นมลูกอยู่'], ['stress', 'เครียดมากหรือนอนน้อย'], ['low', 'น้ำหนักลดเร็ว กินน้อย หรือออกกำลังหนัก'], ['pcos', 'น้ำหนักขึ้น สิวเยอะ หรือขนดก'], ['thy', 'เหนื่อยง่าย ใจสั่น ขี้หนาวหรือขี้ร้อนผิดปกติ'], ['prl', 'มีน้ำนมไหล ปวดหัวบ่อย หรือตามัว'], ['hot', 'ร้อนวูบวาบ เหงื่อออกกลางคืน']];
 function missGuide(dur, ticks, profile) {
@@ -690,10 +731,17 @@ function summaryText(logs, profile, today, A) {
   /* ---------- state ---------- */
   let LS = 'cozy:web:anon';
   const defShare = () => ({ on: false, code: '', nick: '', details: true, next: false });
-  const defProfile = () => ({ age: '', height: '', weight: '', cond: [], condOther: '', meds: '', contra: 'none', perMonth: '1', cycleLen: '28', periodLen: '5', hospName: '', hospPhone: '', homeArea: '', homeLat: '', homeLng: '', share: defShare() });
+  const defProfile = () => ({
+    nickname: '', nickAsked: false, avatar: '', devices: [],
+    age: '', height: '', weight: '', cond: [], condOther: '', meds: '', contra: 'none',
+    perMonth: '1', cycleLen: '28', periodLen: '5',
+    hospName: '', hospPhone: '', homeArea: '', homeLat: '', homeLng: '',
+    plusActive: false, plusNotify: false, share: defShare()
+  });
   function normProfile(p) {
     const o = Object.assign(defProfile(), p || {});
     if (!Array.isArray(o.cond)) o.cond = [];
+    if (!Array.isArray(o.devices)) o.devices = [];
     o.share = Object.assign(defShare(), o.share || {});
     return o;
   }
@@ -704,11 +752,75 @@ function summaryText(logs, profile, today, A) {
     try {
       const o = JSON.parse(localStorage.getItem(LS) || 'null');
       if (o && typeof o === 'object') S = { started: !!o.started, profile: normProfile(o.profile), logs: normLogs(o.logs), paired: Array.isArray(o.paired) ? o.paired.slice(0, 5) : [], dirty: o.dirty && typeof o.dirty === 'object' ? o.dirty : {} };
-    } catch (e) { /* storage unavailable: run in memory */ }
+    } catch (e) { /* storage unavailable */ }
   }
   function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { /* ignore */ } }
 
-  /* example data shown until the person starts their own record; never saved */
+  /* Device ID & tracking */
+  function getDeviceId() {
+    try {
+      let id = localStorage.getItem('cozy:device_id');
+      if (!id) { id = 'dev-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('cozy:device_id', id); }
+      return id;
+    } catch (e) { return 'dev-session'; }
+  }
+  function getDeviceLabel() {
+    const ua = navigator.userAgent || '';
+    let os = 'อุปกรณ์ไม่ระบุระบบ';
+    if (/iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) os = 'iPad';
+    else if (/iPhone/.test(ua)) os = 'iPhone';
+    else if (/Android/.test(ua)) os = 'Android';
+    else if (/Windows/.test(ua)) os = 'Windows PC';
+    else if (/Mac/.test(ua)) os = 'Mac';
+    let br = 'Browser';
+    if (/CriOS|Chrome/.test(ua) && !/Edg/.test(ua)) br = 'Chrome';
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) br = 'Safari';
+    else if (/Firefox|FxiOS/.test(ua)) br = 'Firefox';
+    else if (/Edg/.test(ua)) br = 'Edge';
+    return os + ' · ' + br;
+  }
+  function recordCurrentDevice() {
+    if (!S.started) return;
+    const id = getDeviceId(), label = getDeviceLabel();
+    const nowStr = fmtShort.format(new Date()) + ' ' + pad(new Date().getHours()) + ':' + pad(new Date().getMinutes());
+    const list = Array.isArray(S.profile.devices) ? S.profile.devices : [];
+    const idx = list.findIndex(d => d && d.id === id);
+    const entry = { id: id, label: label, lastActive: nowStr, ts: Date.now() };
+    if (idx >= 0) list[idx] = entry;
+    else list.unshift(entry);
+    S.profile.devices = list.slice(0, 8);
+    push('profile');
+  }
+
+  /* Nickname helper */
+  const callName = () => {
+    const n = (S.profile && S.profile.nickname ? S.profile.nickname.trim() : '') || (demoMode ? (localStorage.getItem('cozy:demo_nick') || '').trim() : '');
+    return n || 'น้อง';
+  };
+
+  /* Top right avatar updater */
+  function paintTopAvatar() {
+    const btn = $('#topAvatar'); if (!btn) return;
+    const av = S.profile.avatar || (cloud.user && cloud.user.photoURL) || '';
+    if (av) {
+      btn.innerHTML = '<img src="' + esc(av) + '" alt="โปรไฟล์">';
+    } else {
+      const ch = (callName() !== 'น้อง' ? callName() : (cloud.user && cloud.user.email ? cloud.user.email : 'ฉัน')).charAt(0).toUpperCase();
+      btn.textContent = ch;
+    }
+  }
+
+  /* Prompt nickname on first open */
+  function checkAskNickname() {
+    const asked = S.started ? S.profile.nickAsked : (localStorage.getItem('cozy:demo_nick_asked') === '1');
+    const hasNick = S.started ? !!S.profile.nickname : !!(localStorage.getItem('cozy:demo_nick'));
+    if (!asked && !hasNick) {
+      const inp = $('#welcomeNick');
+      if (inp) inp.value = '';
+      openSheet('nickSheet');
+    }
+  }
+
   const DEMO = (function () {
     const L = {};
     const put = (off, e) => { L[addDays(TODAY, off)] = normEntry(e); };
@@ -728,10 +840,10 @@ function summaryText(logs, profile, today, A) {
   const logs = () => S.started ? S.logs : DEMO.logs;
   const prof = () => S.started ? S.profile : DEMO.profile;
 
-  /* ---------- backend: Firebase email login + Firestore, with a copy kept on the device ---------- */
+  /* ---------- backend: Firebase ---------- */
   const CFG = window.COZY_FIREBASE || {};
   const FB_VER = '13.2.0';
-  const cloud = { state: 'checking', fb: null, user: null, col: null, loading: false, loadFailed: false, syncErr: '' };   /* state: checking | unconfigured | error | out | in */
+  const cloud = { state: 'checking', fb: null, user: null, col: null, loading: false, loadFailed: false, syncErr: '' };
   let demoMode = false, authMode = 'in', pendingConsent = false, freshLogin = false, loadSeq = 0, writers = {};
   const monthKey = d => 'logs-' + d.slice(0, 7);
   const timeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), ms))]);
@@ -742,7 +854,6 @@ function summaryText(logs, profile, today, A) {
     Object.keys(S.logs).forEach(d => { if (d.slice(0, 7) === m) days[d.slice(8)] = S.logs[d]; });
     return Object.keys(days).length ? { v: 1, days: days } : null;
   }
-  /* each person's documents live under users/<uid>/data/<key> */
   function makeCol(fb, uid) {
     const F = fb.fs, at = key => F.doc(fb.db, 'users', uid, 'data', key);
     return {
@@ -783,7 +894,7 @@ function summaryText(logs, profile, today, A) {
     Object.keys(R).forEach(k => { if (k.indexOf('logs-') === 0) months[k] = 1; });
     Object.keys(S.logs).forEach(d => { months[monthKey(d)] = 1; });
     Object.keys(months).forEach(k => {
-      if (dirty[k]) return;                      /* changed on this device and not uploaded yet: keep it */
+      if (dirty[k]) return;
       const m = k.slice(5);
       Object.keys(S.logs).forEach(d => { if (d.slice(0, 7) === m) delete S.logs[d]; });
       const days = (R[k] && R[k].days) || {};
@@ -810,7 +921,7 @@ function summaryText(logs, profile, today, A) {
     if (!user) {
       cloud.user = null; cloud.col = null; cloud.state = 'out'; cloud.loading = false; cloud.loadFailed = false; cloud.syncErr = '';
       LS = 'cozy:web:anon'; S = blank();
-      if (demoMode) { showApp(); go(); } else showGate();
+      if (demoMode) { showApp(); go(); checkAskNickname(); } else showGate();
       return;
     }
     demoMode = false;
@@ -820,7 +931,7 @@ function summaryText(logs, profile, today, A) {
     try { hadLocal = !!localStorage.getItem(LS); } catch (e) { /* no device copy */ }
     S = blank(); loadLocal(); S.started = true;
     const col = makeCol(cloud.fb, user.uid);
-    cloud.col = null; cloud.loading = true;        /* nothing is written until the server copy has been read */
+    cloud.col = null; cloud.loading = true;
     showGate();
     try {
       const docs = await timeout(col.get(), 15000);
@@ -832,18 +943,28 @@ function summaryText(logs, profile, today, A) {
     } catch (e) {
       if (seq !== loadSeq) return;
       cloud.loading = false;
-      /* a device that has never held this account's data must not start from blank and overwrite the server */
       if (!hadLocal) { cloud.loadFailed = true; showGate(); return; }
       cloud.col = col; cloud.syncErr = (e && e.code) || 'error';
     }
     cloud.loading = false;
     if (pendingConsent) { pendingConsent = false; S.profile.consentAt = TODAY; push('profile'); }
+    // Carry over demo nickname if user just signed up/logged in and has no nickname yet
+    const demoNick = (localStorage.getItem('cozy:demo_nick') || '').trim();
+    if (!S.profile.nickname && demoNick) {
+      S.profile.nickname = demoNick;
+      S.profile.nickAsked = true;
+      push('profile');
+    }
+    recordCurrentDevice();
     if (freshLogin) { freshLogin = false; if (location.hash && location.hash !== '#home') history.replaceState(null, '', '#home'); }
     draft = null; showApp(); go();
+    paintTopAvatar();
+    paintChat();
+    checkAskNickname();
     initShare(); loadPaired();
   }
 
-  /* ---------- sharing a status summary by pairing code: shares/<code>, readable only by exact code ---------- */
+  /* ---------- sharing by pairing code ---------- */
   const canon = o => JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)) ? Object.keys(v).sort().reduce((a, x) => { a[x] = v[x]; return a; }, {}) : v);
   let shareLast = null, sharePub = null, shareBusy = false, shareAgain = false, shareReady = false, shareTries = 0;
   const shareRef = code => cloud.fb.fs.doc(cloud.fb.db, 'shares', code);
@@ -851,7 +972,7 @@ function summaryText(logs, profile, today, A) {
     const sh = S.profile.share;
     if (cloud.state !== 'in' || !sh.on || !sh.code) return null;
     const A = analyze(S.logs, S.profile, TODAY);
-    return { v: 1, owner: cloud.user.uid, code: sh.code, nick: String(sh.nick || '').slice(0, 40), level: A.level, urgent: !!A.urgent,
+    return { v: 1, owner: cloud.user.uid, code: sh.code, nick: String(sh.nick || S.profile.nickname || '').slice(0, 40), level: A.level, urgent: !!A.urgent,
       items: sh.details ? A.findings.slice(0, 12).map(f => ({ l: f.level, t: f.title })) : [],
       next: sh.next && A.cycle.next ? A.cycle.next : '' };
   }
@@ -882,7 +1003,6 @@ function summaryText(logs, profile, today, A) {
         if (body) { await F.setDoc(shareRef(body.code), Object.assign({ updated: TODAY }, body)); sharePub = body.code; }
         if (seq === loadSeq) { shareLast = j; shareTries = 0; }
       } catch (e) {
-        /* the code is already someone else's: pick another one and try again */
         if (seq === loadSeq && body && e && e.code === 'permission-denied' && shareTries < 3) { shareTries++; S.profile.share.code = genCode(); push('profile'); shareAgain = true; renderShare(); }
         else if (seq === loadSeq) { cloud.syncErr = (e && e.code) || 'error'; syncNote(); }
       }
@@ -942,7 +1062,6 @@ function summaryText(logs, profile, today, A) {
     const fail = () => toast('คัดลอกอัตโนมัติไม่ได้ กดค้างที่ข้อความเพื่อคัดลอกแทน');
     try { navigator.clipboard.writeText(text).then(() => toast('คัดลอกแล้ว'), fail); } catch (e) { fail(); }
   }
-  /* saved home GPS wins; otherwise the typed home area; otherwise wherever the phone is now */
   const mapsUrl = area => {
     const p = S.profile;
     if (S.started && p.homeLat && p.homeLng) return 'https://www.google.com/maps/search/' + encodeURIComponent('โรงพยาบาล') + '/@' + p.homeLat + ',' + p.homeLng + ',14z';
@@ -1046,7 +1165,8 @@ function summaryText(logs, profile, today, A) {
   }
   function renderHome() {
     const L = logs(), A = analyze(L, prof(), TODAY), C = A.cycle;
-    let h = calHTML(C, L);
+    const greeting = callName() !== 'น้อง' ? '<p class="muted small">สวัสดีจ้ะ <strong>' + esc(callName()) + '</strong> วันนี้เป็นยังไงบ้าง?</p>' : '';
+    let h = greeting + calHTML(C, L);
     if (S.started && !C.last) h += cloud.loading ? '<section class="card"><p class="muted">กำลังโหลดข้อมูลของคุณ…</p></section>' : setupHTML();
     h += '<button type="button" class="btn primary block" data-act="log-today">บันทึกวันนี้</button>';
     if (C.last) {
@@ -1149,9 +1269,9 @@ function summaryText(logs, profile, today, A) {
       + (logPane === 'form' ? formHTML() : logPane === 'miss' ? missHTML() : resultHTML());
   }
 
-  /* ---------- พี่โคซี่: preset topics are free, anything else is Plus ---------- */
+  /* ---------- พี่โคซี่ ---------- */
   const PLUS = Object.assign({ price: '59 บาท / เดือน' }, window.COZY_PLUS || {});
-  const GREET = 'สวัสดีจ้ะ พี่โคซี่เอง เลือกหัวข้อด้านล่างหรือพิมพ์ถามได้เลยนะ';
+  const greetMsg = () => 'สวัสดีจ้ะ' + (callName() !== 'น้อง' ? ' ' + callName() : '') + ' พี่โคซี่เอง เลือกหัวข้อด้านล่างหรือพิมพ์ถามได้เลยนะ';
   const TOPICS = [
     ['เมนไม่มา', /เมน.{0,12}(ไม่มา|ขาด|เลื่อน|ช้า|หาย)|ประจำเดือน.{0,12}(ไม่มา|ขาด|เลื่อน|ช้า|หาย)|ตั้งครรภ์|ตั้งท้อง|ท้องไหม/, 'เมนไม่มาเกิดได้จากหลายอย่างนะ ที่พบบ่อยคือ ตั้งครรภ์ ความเครียดหรือน้ำหนักเปลี่ยน PCOS ไทรอยด์ และผลจากยาคุม\n\nถ้ามีเพศสัมพันธ์ให้ตรวจการตั้งครรภ์ก่อน ถ้าขาดครบ 3 เดือนควรไปหาหมอ ไม่ต้องรอให้มาเอง\n\nเปิดแท็บ บันทึก แล้วกด เมนไม่มา จะมีตัวช่วยไล่สาเหตุกับขั้นตอนให้ทีละข้อ'],
     ['ตกขาว', /ตกขาว|กลิ่น|คัน/, 'ตกขาวใสหรือขาวขุ่น ไม่มีกลิ่น ไม่คัน เป็นเรื่องปกติและเปลี่ยนตามช่วงของรอบเดือนนะ\n\nที่ควรไปหาหมอคือ สีเหลือง เขียว หรือเทา มีกลิ่นคาวหรือเหม็น เป็นก้อนคล้ายแป้งและคัน หรือมีเลือดปนนอกรอบเดือน ถ้ามีไข้หรือปวดท้องน้อยร่วมด้วย ควรไปวันนั้นเลย'],
@@ -1162,15 +1282,15 @@ function summaryText(logs, profile, today, A) {
   ];
   const URGENT = /ปวดมาก|ปวดรุนแรง|หน้ามืด|เป็นลม|เลือดออกมาก|เลือดออกเยอะ|หายใจไม่ออก/;
   const URGENT_TEXT = 'ถ้าตอนนี้ปวดรุนแรง หน้ามืด หรือเลือดออกมาก อย่ารอนะ ไปห้องฉุกเฉินหรือโทร 1669 ก่อนเลย';
-  /* returns the free answer, or null when the question is outside the free topics; safety advice is never locked */
   function freeReply(text) {
     const urgent = URGENT.test(text);
+    const n = callName();
     let a = null;
     if (/ผลวิเคราะห์|สถานะ/.test(text)) {
-      if (!S.started) a = 'พี่ยังไม่เห็นบันทึกของน้อง สมัครหรือเข้าสู่ระบบ แล้วบันทึกอาการสัก 2-3 วัน พี่จะสรุปผลให้ได้';
+      if (!S.started) a = 'พี่ยังไม่เห็นบันทึกของ' + n + ' สมัครหรือเข้าสู่ระบบ แล้วบันทึกอาการสัก 2-3 วัน พี่จะสรุปผลให้ได้';
       else {
         const A = analyze(S.logs, S.profile, TODAY);
-        a = 'จากบันทึกล่าสุด สถานะของน้องคือ ' + statusLabel(A) + (A.findings.length ? '\n\nเรื่องที่พบ: ' + A.findings.map(f => f.title).join(', ') : '') + '\n\nดูรายละเอียดและสิ่งที่ควรทำได้ในแท็บ บันทึก ที่หัวข้อ ผลวิเคราะห์';
+        a = 'จากบันทึกล่าสุด สถานะของ' + n + 'คือ ' + statusLabel(A) + (A.findings.length ? '\n\nเรื่องที่พบ: ' + A.findings.map(f => f.title).join(', ') : '') + '\n\nดูรายละเอียดและสิ่งที่ควรทำได้ในแท็บ บันทึก ที่หัวข้อ ผลวิเคราะห์';
       }
     }
     for (let i = 0; a === null && i < TOPICS.length; i++) if (TOPICS[i][1].test(text)) a = TOPICS[i][2];
@@ -1192,7 +1312,7 @@ function summaryText(logs, profile, today, A) {
   function renderChat() { $('#chatClear').hidden = chatLog.length === 0; }
   function paintChat() {
     $('#msgs').innerHTML = '';
-    addMsg('cozy', GREET, true);
+    addMsg('cozy', greetMsg(), true);
     chatLog.forEach(m => { if (m.r === 'l') addLock(true); else addMsg(m.r === 'u' ? 'me' : 'cozy', m.t, true); });
     $('#topics').innerHTML = TOPICS.map(t => '<button type="button" class="chip" data-act="topic">' + t[0] + '</button>').join('') + '<button type="button" class="chip" data-act="topic">ผลวิเคราะห์ของฉัน</button>';
     renderChat();
@@ -1221,7 +1341,7 @@ function summaryText(logs, profile, today, A) {
   }
   function openPrivacy() {
     $('#policyText').textContent = window.COZY_PRIVACY || [
-      'ข้อมูลที่เก็บ: อีเมล ข้อมูลร่างกาย บันทึกรอบเดือนและอาการที่คุณกรอก โรงพยาบาลที่คุณบันทึก และพิกัดบ้านถ้าคุณกดบันทึก',
+      'ข้อมูลที่เก็บ: อีเมล ชื่อเล่น รูปโปรไฟล์ ข้อมูลร่างกาย บันทึกรอบเดือนและอาการที่คุณกรอก โรงพยาบาลที่คุณบันทึก และพิกัดบ้านถ้าคุณกดบันทึก',
       'เก็บเพื่ออะไร: เพื่อแสดงปฏิทิน ผลคัดกรอง และสถานะที่คุณเลือกแชร์ให้คนที่มีรหัสจับคู่ของคุณ',
       'เก็บที่ไหน: บนบริการ Firebase ของ Google และสำเนาในเบราว์เซอร์ของเครื่องที่คุณเข้าสู่ระบบ',
       'ใครเห็นได้: คุณ และผู้ดูแลระบบของแอพซึ่งเข้าถึงฐานข้อมูลได้เพื่อดูแลระบบ คนที่มีรหัสจับคู่ของคุณเห็นเฉพาะสถานะที่คุณเปิดแชร์',
@@ -1229,6 +1349,151 @@ function summaryText(logs, profile, today, A) {
       'ติดต่อผู้ดูแลแอพ: ' + (window.COZY_CONTACT || '[ยังไม่ได้ระบุ ให้เจ้าของแอพใส่อีเมลใน config.js]')
     ].join('\n\n');
     openSheet('privacy');
+  }
+
+  /* ---------- Profile & Account Settings Sheet (Top-Right Avatar) ---------- */
+  let acctView = 'main'; // 'main' | 'email' | 'devices' | 'security' | 'membership'
+  function openAcctSheet(view) {
+    acctView = view || 'main';
+    renderAcctSheet();
+    openSheet('acctSheet');
+  }
+  function renderAcctSheet() {
+    const box = $('#acctSheetBody'); if (!box) return;
+    const inn = cloud.state === 'in';
+    const email = inn ? (cloud.user.email || 'ไม่มีอีเมล') : 'โหมดทดลองใช้งาน';
+    const av = S.profile.avatar || (cloud.user && cloud.user.photoURL) || '';
+    const ch = (callName() !== 'น้อง' ? callName() : (inn ? email : 'ฉัน')).charAt(0).toUpperCase();
+    const picHTML = av ? '<img src="' + esc(av) + '" alt="โปรไฟล์">' : esc(ch);
+    const providers = inn && cloud.user.providerData ? cloud.user.providerData.map(p => p.providerId) : [];
+    const isPasswordUser = providers.indexOf('password') >= 0;
+    const isGoogleUser = providers.indexOf('google.com') >= 0;
+
+    if (acctView === 'main') {
+      box.innerHTML = '<div class="acct-hero">'
+        + '<div class="acct-pic">' + picHTML + '</div>'
+        + '<div class="acct-meta">'
+        + '<div class="acct-name">' + esc(callName() !== 'น้อง' ? callName() : 'ยังไม่ได้ตั้งชื่อเล่น') + '</div>'
+        + '<div class="small muted">' + esc(email) + '</div>'
+        + '<div class="inline" style="margin-top:8px"><button type="button" class="btn sm" data-act="pick-avatar">เปลี่ยนรูปโปรไฟล์</button>' + (S.profile.avatar ? '<button type="button" class="btn sm" data-act="clear-avatar">ลบรูป</button>' : '') + '</div>'
+        + '</div></div>'
+        + '<div class="field"><label class="label" for="acctNickInput">ชื่อที่พี่โคซี่เรียก</label>'
+        + '<div class="inline"><input class="input" id="acctNickInput" style="flex:1" value="' + esc(S.profile.nickname || (demoMode ? (localStorage.getItem('cozy:demo_nick') || '') : '')) + '" placeholder="ใส่ชื่อเล่นของคุณ" maxlength="30"><button type="button" class="btn sm primary" data-act="save-acct-nick">บันทึก</button></div></div>'
+        + '<div class="menu-list">'
+        + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="email"><span class="menu-item-l"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span class="menu-item-t"><strong>ดูอีเมลที่ล็อกอิน</strong><span>' + esc(email) + '</span></span></span><span class="menu-chev">›</span></button>'
+        + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="devices"><span class="menu-item-l"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><circle cx="12" cy="17" r="1"/></svg><span class="menu-item-t"><strong>อุปกรณ์ที่เข้าสู่ระบบ</strong><span>' + (inn ? (S.profile.devices.length || 1) + ' อุปกรณ์' : 'ต้องเข้าสู่ระบบก่อน') + '</span></span></span><span class="menu-chev">›</span></button>'
+        + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="security"><span class="menu-item-l"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V7l-8-4z"/></svg><span class="menu-item-t"><strong>รหัสผ่านและความปลอดภัย</strong><span>เปลี่ยนรหัสผ่าน · รีเซ็ตรหัสผ่าน</span></span></span><span class="menu-chev">›</span></button>'
+        + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="membership"><span class="menu-item-l"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="menu-item-t"><strong>โปรแกรมสมาชิก</strong><span>' + (S.profile.plusActive ? 'Cozy Plus' : 'แพ็กเกจฟรี · ดู Cozy Plus') + '</span></span></span><span class="menu-chev">›</span></button>'
+        + '</div>'
+        + (inn ? '<button type="button" class="btn danger block" data-act="signout">ออกจากระบบ</button>' : '<button type="button" class="btn primary block" data-act="start">สมัคร / เข้าสู่ระบบ</button>')
+        + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
+    } else if (acctView === 'email') {
+      box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>อีเมลที่ล็อกอิน</h2></div>'
+        + '<div class="card stack">'
+        + '<div><div class="small muted">อีเมลบัญชีปัจจุบัน</div><div class="acct" style="font-size:1.1rem;margin-top:4px">' + esc(email) + '</div></div>'
+        + (inn ? '<div><div class="small muted">รูปแบบการเข้าสู่ระบบ</div><div style="margin-top:4px">' + (isGoogleUser && isPasswordUser ? 'Google และ อีเมล/รหัสผ่าน' : isGoogleUser ? 'บัญชี Google' : 'อีเมลและรหัสผ่าน') + '</div></div>'
+        + '<div><div class="small muted">สถานะการยืนยันอีเมล</div><div style="margin-top:4px">' + (cloud.user.emailVerified ? 'ยืนยันอีเมลแล้ว' : 'ยังไม่ยืนยันอีเมล') + '</div></div>' : '<p class="muted">คุณกำลังใช้งานในโหมดตัวอย่าง สมัครหรือเข้าสู่ระบบเพื่อผูกอีเมลและสำรองข้อมูล</p>')
+        + '</div>'
+        + (inn ? '<button type="button" class="btn" data-act="copy" data-copy="' + esc(email) + '">คัดลอกอีเมล</button>' : '<button type="button" class="btn primary block" data-act="start">สมัคร / เข้าสู่ระบบ</button>')
+        + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
+    } else if (acctView === 'devices') {
+      const curId = getDeviceId();
+      const devs = S.profile.devices && S.profile.devices.length ? S.profile.devices : [{ id: curId, label: getDeviceLabel(), lastActive: 'ตอนนี้' }];
+      box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>อุปกรณ์ที่เข้าสู่ระบบ</h2></div>'
+        + '<p class="small muted">รายการอุปกรณ์ที่เคยเข้าสู่ระบบบัญชี Cozy ของคุณ</p>'
+        + '<div class="stack">' + devs.map(d => {
+          const isCur = d.id === curId;
+          return '<div class="dev-item"><div class="dev-head"><strong>' + esc(d.label) + '</strong>' + (isCur ? '<span class="pill">เครื่องนี้</span>' : '<button type="button" class="btn sm" data-act="remove-device" data-did="' + esc(d.id) + '">นำออก</button>') + '</div><span class="small muted">ใช้งานล่าสุด: ' + esc(isCur ? 'กำลังใช้งานอยู่' : (d.lastActive || '-')) + '</span></div>';
+        }).join('') + '</div>'
+        + (inn ? '<button type="button" class="btn danger block" data-act="signout">ออกจากระบบเครื่องนี้</button>' : '')
+        + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
+    } else if (acctView === 'security') {
+      box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>รหัสผ่านและความปลอดภัย</h2></div>'
+        + (!inn ? '<p class="card muted">เข้าสู่ระบบก่อนเพื่อจัดการรหัสผ่านและความปลอดภัยของบัญชี</p><button type="button" class="btn primary block" data-act="start">สมัคร / เข้าสู่ระบบ</button>'
+        : '<div class="card stack">'
+        + '<h3>รีเซ็ตรหัสผ่านทางอีเมล</h3>'
+        + '<p class="small muted">ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปยังอีเมล <strong>' + esc(email) + '</strong></p>'
+        + '<button type="button" class="btn outline block" data-act="send-reset-inapp">ส่งลิงก์รีเซ็ตรหัสผ่าน</button>'
+        + (isPasswordUser ? '<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">'
+          + '<h3>เปลี่ยนรหัสผ่านใหม่ทันที</h3>'
+          + '<div class="field"><label class="label" for="curPassIn">รหัสผ่านปัจจุบัน</label><input class="input" id="curPassIn" type="password" autocomplete="current-password"></div>'
+          + '<div class="field"><label class="label" for="newPassIn">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label><input class="input" id="newPassIn" type="password" autocomplete="new-password"></div>'
+          + '<p class="small err" id="secErr" hidden></p>'
+          + '<button type="button" class="btn primary block" id="btnChangePass" data-act="change-pass">บันทึกรหัสผ่านใหม่</button>'
+          : '<p class="small muted">บัญชีนี้เชื่อมต่อผ่าน Google สามารถจัดการรหัสผ่านและความปลอดภัยเพิ่มเติมได้ที่บัญชี Google ของคุณ</p>')
+        + '</div>')
+        + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
+    } else if (acctView === 'membership') {
+      box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>โปรแกรมสมาชิก</h2></div>'
+        + '<div class="card stack">'
+        + '<div class="inline" style="justify-content:space-between"><h3>สถานะปัจจุบัน</h3><span class="pill">' + (S.profile.plusActive ? 'Cozy Plus' : 'แพ็กเกจฟรี') + '</span></div>'
+        + '<p class="muted">ใช้งานปฏิทินนับวัน บันทึกอาการ ผลวิเคราะห์คัดกรอง ตัวช่วยเมนไม่มา และการจับคู่กับคนใกล้ชิดได้ฟรีตลอดชีพ</p>'
+        + '<div style="background:var(--surface-2);border-radius:14px;padding:14px" class="stack">'
+        + '<div class="inline" style="justify-content:space-between"><strong>Cozy Plus</strong><span class="price" style="font-size:1.2rem">' + esc(PLUS.price) + '</span></div>'
+        + '<ul class="plus-list small"><li>ถามพี่โคซี่ได้ทุกเรื่อง ไม่จำกัดหัวข้อ</li><li>คำตอบเจาะจงจากบันทึกสุขภาพของคุณ</li><li>คุยต่อเนื่อง จำเรื่องที่เคยเล่าไว้</li></ul>'
+        + '<button type="button" class="btn primary block" data-act="plus-open">ดูรายละเอียด Cozy Plus</button>'
+        + '</div></div>'
+        + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
+    }
+  }
+
+  /* Resize image to 160x160 dataURL for avatar storage */
+  function handleAvatarUpload(file) {
+    if (!file) return;
+    if (!needLogin()) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const size = 160;
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const minSide = Math.min(img.width, img.height);
+        const sx = (img.width - minSide) / 2;
+        const sy = (img.height - minSide) / 2;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+        S.profile.avatar = canvas.toDataURL('image/jpeg', 0.82);
+        push('profile');
+        paintTopAvatar();
+        renderAcctSheet();
+        toast('อัปเดตรูปโปรไฟล์แล้ว');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function changePasswordInApp() {
+    if (cloud.state !== 'in' || !cloud.fb || !cloud.user) return;
+    const curP = $('#curPassIn') ? $('#curPassIn').value : '';
+    const newP = $('#newPassIn') ? $('#newPassIn').value : '';
+    const errEl = $('#secErr'), btn = $('#btnChangePass');
+    errEl.hidden = true;
+    if (!curP) { errEl.textContent = 'กรอกรหัสผ่านปัจจุบันก่อน'; errEl.hidden = false; return; }
+    if (!newP || newP.length < 6) { errEl.textContent = 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.hidden = false; return; }
+    btn.disabled = true;
+    try {
+      const cred = cloud.fb.au.EmailAuthProvider.credential(cloud.user.email, curP);
+      await cloud.fb.au.reauthenticateWithCredential(cloud.user, cred);
+      await cloud.fb.au.updatePassword(cloud.user, newP);
+      $('#curPassIn').value = ''; $('#newPassIn').value = '';
+      toast('เปลี่ยนรหัสผ่านสำเร็จแล้ว');
+    } catch (e) {
+      errEl.textContent = AUTH_MSG[e && e.code] || 'เปลี่ยนรหัสผ่านไม่สำเร็จ ตรวจสอบรหัสผ่านปัจจุบันแล้วลองใหม่';
+      errEl.hidden = false;
+    }
+    btn.disabled = false;
+  }
+
+  async function sendResetInApp() {
+    if (cloud.state !== 'in' || !cloud.fb || !cloud.user || !cloud.user.email) return;
+    try {
+      await cloud.fb.au.sendPasswordResetEmail(cloud.fb.auth, cloud.user.email);
+      toast('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว');
+    } catch (e) {
+      toast(AUTH_MSG[e && e.code] || 'ส่งอีเมลไม่สำเร็จ ลองใหม่อีกครั้ง');
+    }
   }
 
   /* ---------- login gate ---------- */
@@ -1239,8 +1504,8 @@ function summaryText(logs, profile, today, A) {
     'auth/email-already-in-use': 'อีเมลนี้สมัครไว้แล้ว ลองเข้าสู่ระบบแทน',
     'auth/weak-password': 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร',
     'auth/invalid-credential': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-    'auth/wrong-password': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-    'auth/user-not-found': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
+    'auth/user-not-found': 'ไม่พบบัญชีอีเมลนี้',
     'auth/too-many-requests': 'ลองหลายครั้งเกินไป รอสักครู่แล้วลองใหม่',
     'auth/popup-closed-by-user': 'ปิดหน้าต่างเข้าสู่ระบบก่อนเสร็จสิ้น ลองกดใหม่อีกครั้ง',
     'auth/popup-blocked': 'เบราว์เซอร์บล็อกหน้าต่างป๊อปอัป กรุณาอนุญาตป๊อปอัปแล้วลองใหม่',
@@ -1276,7 +1541,10 @@ function summaryText(logs, profile, today, A) {
     $('#gateDemo').hidden = st === 'in';
     window.scrollTo(0, 0);
   }
-  function showApp() { $('#gate').hidden = true; $('#app').hidden = false; $('#tabs').hidden = false; }
+  function showApp() {
+    $('#gate').hidden = true; $('#app').hidden = false; $('#tabs').hidden = false;
+    paintTopAvatar();
+  }
   async function submitAuth() {
     if (cloud.state !== 'out' || !cloud.fb) return;
     const email = val('auEmail'), pass = $('#auPass').value, btn = $('#auSubmit');
@@ -1315,10 +1583,11 @@ function summaryText(logs, profile, today, A) {
     if (!email) { authErr('กรอกอีเมลในช่องด้านบนก่อน แล้วกด ลืมรหัสผ่าน อีกครั้ง'); return; }
     try {
       await cloud.fb.au.sendPasswordResetEmail(cloud.fb.auth, email);
-      authErr('ถ้ามีบัญชีของอีเมลนี้ ระบบส่งลิงก์ตั้งรหัสผ่านใหม่ไปแล้ว ตรวจกล่องจดหมายและโฟลเดอร์สแปม', true);
+      authErr('ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ' + email + ' แล้ว กรุณาตรวจกล่องจดหมายและโฟลเดอร์สแปม', true);
     } catch (e) { authErr(AUTH_MSG[e && e.code] || 'ส่งอีเมลไม่สำเร็จ ลองใหม่อีกครั้ง'); }
   }
   function signOutNow() {
+    closeSheets();
     try { if (!Object.keys(S.dirty).length) localStorage.removeItem(LS); } catch (e) { /* ignore */ }
     demoMode = false;
     cloud.fb.au.signOut(cloud.fb.auth).catch(function () { toast('ออกจากระบบไม่สำเร็จ ลองใหม่อีกครั้ง'); });
@@ -1356,7 +1625,9 @@ function summaryText(logs, profile, today, A) {
     meCond = p.cond.slice();
     const row = (id, label, v, unit, attrs) => '<div class="row"><label for="' + id + '">' + label + '</label><span class="row-in"><input class="input num" id="' + id + '" type="number" inputmode="decimal" value="' + esc(v) + '" ' + attrs + '><span class="unit">' + unit + '</span></span></div>';
     let h = inn
-      ? '<section class="card stack"><h2>บัญชี</h2><p class="acct">' + esc(cloud.user.email || '') + '</p><button type="button" class="btn" data-act="signout">ออกจากระบบ</button></section>'
+      ? '<section class="card stack"><h2>บัญชี &amp; ชื่อเล่น</h2><p class="acct">' + esc(cloud.user.email || '') + '</p>'
+        + '<div class="field"><label class="label" for="pNickname">ชื่อที่อยากให้พี่โคซี่เรียก</label><input class="input" id="pNickname" value="' + esc(p.nickname) + '" placeholder="เช่น มายด์, น้ำ" maxlength="30"></div>'
+        + '<div class="inline"><button type="button" class="btn sm outline" data-act="acct-open">ตั้งค่าบัญชีและความปลอดภัย</button><button type="button" class="btn sm" data-act="signout">ออกจากระบบ</button></div></section>'
       : '<section class="card stack"><h2>บัญชี</h2><p class="muted">ตอนนี้เป็นโหมดตัวอย่าง สมัครหรือเข้าสู่ระบบเพื่อเริ่มเก็บข้อมูลของคุณ</p><button type="button" class="btn primary" data-act="start">สมัคร / เข้าสู่ระบบ</button></section>';
     h += '<section class="card stack"><h2>ข้อมูลร่างกาย</h2><div>'
       + row('pAge', 'อายุ', p.age, 'ปี', 'min="8" max="70"') + row('pHeight', 'ส่วนสูง', p.height, 'ซม.', 'min="100" max="220"') + row('pWeight', 'น้ำหนัก', p.weight, 'กก.', 'min="20" max="250" step="0.1"')
@@ -1402,7 +1673,7 @@ function summaryText(logs, profile, today, A) {
       h += '<div class="switch-row"><span class="label" id="shLabel">เปิดการแชร์</span><button type="button" class="switch" role="switch" aria-checked="' + sh.on + '" aria-labelledby="shLabel" data-act="share-toggle"></button></div>';
       if (sh.on) {
         h += '<div class="codebox"><div><div class="small muted">รหัสจับคู่ของคุณ</div><div class="code">' + esc(sh.code) + '</div></div><button type="button" class="btn sm" data-act="copy" data-copy="' + esc(sh.code) + '">คัดลอก</button></div>'
-          + '<div class="field"><label class="label" for="shNick">ชื่อที่ให้คนใกล้ชิดเห็น</label><input class="input" id="shNick" value="' + esc(sh.nick) + '" maxlength="40" placeholder="เช่น มายด์"></div>'
+          + '<div class="field"><label class="label" for="shNick">ชื่อที่ให้คนใกล้ชิดเห็น</label><input class="input" id="shNick" value="' + esc(sh.nick || S.profile.nickname) + '" maxlength="40" placeholder="เช่น มายด์"></div>'
           + '<label class="check"><input type="checkbox" id="shDetails"' + (sh.details ? ' checked' : '') + '><span>แชร์หัวข้อของสิ่งที่พบด้วย เช่น "ประจำเดือนเลยกำหนดมา 9 วัน"</span></label>'
           + '<label class="check"><input type="checkbox" id="shNext"' + (sh.next ? ' checked' : '') + '><span>แชร์วันที่คาดว่าประจำเดือนรอบถัดไปจะมา</span></label>'
           + '<p class="small muted">วิธีใช้: ส่งลิงก์แอพและรหัสนี้ให้เขา ให้เขาสมัครสมาชิก เปิดแท็บ จับคู่ แล้วใส่รหัสของคุณ</p>'
@@ -1414,11 +1685,12 @@ function summaryText(logs, profile, today, A) {
   const val = id => { const el = $('#' + id); return el ? String(el.value).trim() : ''; };
   function saveProfile() {
     if (!needLogin()) return;
-    const v = { age: val('pAge'), height: val('pHeight'), weight: val('pWeight'), condOther: val('pCondOther'), meds: val('pMeds'), contra: val('pContra') || 'none', perMonth: val('pPerMonth'), cycleLen: val('pCycleLen'), periodLen: val('pPeriodLen') };
+    const newNick = val('pNickname');
+    const v = { nickname: newNick, nickAsked: true, age: val('pAge'), height: val('pHeight'), weight: val('pWeight'), condOther: val('pCondOther'), meds: val('pMeds'), contra: val('pContra') || 'none', perMonth: val('pPerMonth'), cycleLen: val('pCycleLen'), periodLen: val('pPeriodLen') };
     const last = val('pLastStart');
     Object.assign(S.profile, v, { homeArea: val('pHomeArea'), hospName: val('pHospName'), hospPhone: val('pHospPhone'), cond: meCond.slice() });
     seedPeriod(last);
-    push('profile'); syncShare(); render();
+    push('profile'); syncShare(); paintTopAvatar(); paintChat(); render();
     toast('บันทึกข้อมูลแล้ว');
   }
   function saveHosp() {
@@ -1439,12 +1711,12 @@ function summaryText(logs, profile, today, A) {
     S = blank(); S.started = true; S.dirty = dirty;
     Object.keys(keys).forEach(push);
     Object.keys(pairedData).forEach(k => { delete pairedData[k]; });
-    syncShare(); resetSession(); render(); toast('ลบข้อมูลทั้งหมดแล้ว');
+    syncShare(); paintTopAvatar(); resetSession(); render(); toast('ลบข้อมูลทั้งหมดแล้ว');
   }
   async function deleteAccount() {
     const col = cloud.col, fb = cloud.fb; if (!col || !fb) return;
     try {
-      cloud.col = null;                                   /* stop background saves while deleting */
+      cloud.col = null;
       const docs = await col.get();
       await Promise.all(docs.map(d => col.del(d.id)));
       if (sharePub) { await fb.fs.deleteDoc(shareRef(sharePub)); sharePub = null; }
@@ -1482,8 +1754,8 @@ function summaryText(logs, profile, today, A) {
     if (ev.target.classList && ev.target.classList.contains('sheet')) { closeSheets(); return; }
     const t = ev.target.closest('[data-act]'); if (!t) return;
     const act = t.dataset.act;
-    if (act === 'start') { demoMode = false; showGate(); }
-    else if (act === 'demo') { demoMode = true; showApp(); if (location.hash && location.hash !== '#home') location.hash = '#home'; else go(); }
+    if (act === 'start') { closeSheets(); demoMode = false; showGate(); }
+    else if (act === 'demo') { demoMode = true; showApp(); if (location.hash && location.hash !== '#home') location.hash = '#home'; else go(); checkAskNickname(); }
     else if (act === 'auth-mode') setAuthMode(t.dataset.mode);
     else if (act === 'auth-google') signInGoogle();
     else if (act === 'auth-forgot') forgot();
@@ -1491,6 +1763,50 @@ function summaryText(logs, profile, today, A) {
     else if (act === 'sheet-close') closeSheets();
     else if (act === 'signout') signOutNow();
     else if (act === 'retry-load') { if (cloud.user) onUser(cloud.user); }
+    else if (act === 'save-welcome-nick') {
+      const n = val('welcomeNick').slice(0, 30);
+      if (S.started) {
+        S.profile.nickname = n; S.profile.nickAsked = true;
+        push('profile');
+      } else {
+        try { localStorage.setItem('cozy:demo_nick', n); localStorage.setItem('cozy:demo_nick_asked', '1'); } catch (e) {}
+      }
+      closeSheets(); paintTopAvatar(); paintChat(); render();
+      if (n) toast('ยินดีที่ได้รู้จักจ้ะ ' + n + ' 🌷');
+    }
+    else if (act === 'skip-welcome-nick') {
+      if (S.started) { S.profile.nickAsked = true; push('profile'); }
+      else { try { localStorage.setItem('cozy:demo_nick_asked', '1'); } catch (e) {} }
+      closeSheets();
+    }
+    else if (act === 'acct-open') openAcctSheet('main');
+    else if (act === 'acct-sub') openAcctSheet(t.dataset.sub);
+    else if (act === 'save-acct-nick') {
+      const n = val('acctNickInput').slice(0, 30);
+      if (S.started) {
+        S.profile.nickname = n; S.profile.nickAsked = true;
+        push('profile');
+      } else {
+        try { localStorage.setItem('cozy:demo_nick', n); localStorage.setItem('cozy:demo_nick_asked', '1'); } catch (e) {}
+      }
+      paintTopAvatar(); paintChat(); renderAcctSheet(); render();
+      toast('บันทึกชื่อเล่นแล้ว');
+    }
+    else if (act === 'pick-avatar') {
+      if (!needLogin()) return;
+      $('#avatarFile').click();
+    }
+    else if (act === 'clear-avatar') {
+      if (!needLogin()) return;
+      S.profile.avatar = ''; push('profile'); paintTopAvatar(); renderAcctSheet(); toast('ลบรูปโปรไฟล์แล้ว');
+    }
+    else if (act === 'remove-device') {
+      if (!needLogin()) return;
+      S.profile.devices = (S.profile.devices || []).filter(d => d.id !== t.dataset.did);
+      push('profile'); renderAcctSheet(); toast('นำอุปกรณ์ออกจากรายการแล้ว');
+    }
+    else if (act === 'send-reset-inapp') sendResetInApp();
+    else if (act === 'change-pass') changePasswordInApp();
     else if (act === 'cal-prev') shiftMonth(-1);
     else if (act === 'cal-next') shiftMonth(1);
     else if (act === 'cal-today') { calMonth = TODAY.slice(0, 7); renderHome(); }
@@ -1521,7 +1837,7 @@ function summaryText(logs, profile, today, A) {
     else if (act === 'ask-miss') { sendChat('เมนไม่มา'); location.hash = '#chat'; }
     else if (act === 'topic') sendChat(t.textContent);
     else if (act === 'chat-clear') { chatLog = []; paintChat(); }
-    else if (act === 'plus-open') openPlus();
+    else if (act === 'plus-open') { closeSheets(); openPlus(); }
     else if (act === 'plus-join') plusJoin();
     else if (act === 'plus-notify') { S.profile.plusNotify = true; push('profile'); plusJoin(); }
     else if (act === 'setup-save') {
@@ -1570,6 +1886,9 @@ function summaryText(logs, profile, today, A) {
       const sh = S.profile.share;
       sh.nick = val('shNick'); sh.details = $('#shDetails').checked; sh.next = $('#shNext').checked;
       push('profile'); syncShare();
+    } else if (id === 'avatarFile' && ev.target.files && ev.target.files[0]) {
+      handleAvatarUpload(ev.target.files[0]);
+      ev.target.value = '';
     }
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeSheets(); });
