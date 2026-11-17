@@ -272,6 +272,43 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .tag{font-size:.75rem;font-weight:600;border-radius:999px;padding:.05rem .55rem;margin-left:.45rem;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
 .msg.lock{align-self:flex-start;background:var(--surface);border:1.5px dashed var(--line-strong);border-bottom-left-radius:6px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;white-space:normal}
 .policy{white-space:pre-wrap;font-size:.9375rem;margin:0}
+/* hormone energy & desire chart (home, under the profile) */
+.hz-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hz-sub{font-size:.875rem;color:var(--ink-2)}
+.hz-chart{position:relative;height:120px;padding-top:4px}
+.hz-bars{position:absolute;inset:4px 0 0;display:grid;gap:2px;align-items:end}
+.hz-bar{appearance:none;border:0;padding:0;margin:0;height:100%;background:none;cursor:pointer;display:flex;align-items:flex-end;border-radius:6px;position:relative;min-width:0}
+.hz-bar.fert{background:var(--warn-bg)}
+.hz-bar.men::after{content:"";position:absolute;left:15%;right:15%;bottom:-8px;height:4px;border-radius:2px;background:var(--accent)}
+.hz-fill{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--accent);opacity:.55}
+.hz-bar.fert .hz-fill{opacity:.9}
+.hz-bar[aria-pressed="true"] .hz-fill{opacity:1;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.hz-bar.today::before{content:"";position:absolute;bottom:-17px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:var(--ink)}
+.hz-line{position:absolute;inset:4px 0 0;width:100%;height:calc(100% - 4px);pointer-events:none;overflow:visible}
+.hz-line path{fill:none;stroke:var(--fertile);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.hz-axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-2);padding-top:22px;font-variant-numeric:tabular-nums}
+.hz-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8125rem;color:var(--ink-2)}
+.hz-legend span{display:inline-flex;align-items:center;gap:6px}
+.hz-legend i{display:inline-block;flex:none}
+.hz-legend .k-lib{width:12px;height:12px;border-radius:3px;background:var(--accent)}
+.hz-legend .k-en{width:14px;height:3px;border-radius:2px;background:var(--fertile)}
+.hz-legend .k-fert{width:12px;height:12px;border-radius:3px;background:var(--warn-bg);border:1px solid var(--warn)}
+.hz-legend .k-men{width:12px;height:4px;border-radius:2px;background:var(--accent)}
+.hz-day{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.hz-dayh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hz-dayh strong{font-family:var(--font-display);font-weight:500;font-size:1.125rem}
+.hz-meters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hz-meter{background:var(--surface-2);border-radius:12px;padding:10px 12px;min-width:0}
+.hz-meter span{display:block;font-size:.8125rem;color:var(--ink-2)}
+.hz-meter b{display:block;font-weight:600}
+.hz-track{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.hz-track i{display:block;height:100%;border-radius:3px}
+.hz-alert{border-radius:12px;padding:12px 14px;border:1.5px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.hz-alert[data-tone="hi"]{border-color:var(--warn);background:var(--warn-bg)}
+.hz-alert[data-tone="hi"] .hz-at{color:var(--warn)}
+.hz-at{font-weight:600}
+.hz-alert ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:4px}
+.hz-note{font-size:.875rem;color:var(--ink-2)}
 @media (prefers-reduced-motion: reduce){ .switch::after{transition:none} }
 </style>
 </head>
@@ -451,6 +488,70 @@ function cycleInfo(logs, profile, today) {
     }
   }
   return { P, cycles, recent, avg, len, periodLen, last, cd, next, until, inPeriod, predicted, fertile };
+}
+
+/* Typical hormone-phase trend for one cycle day. 0-100 scales are relative trends, not measurements.
+   Ovulation is taken as ~14 days before the next period; the fertile window is the 5 days before it plus the day after. */
+function hormoneDay(d, L, periodLen) {
+  const ov = L - 13, g = (x, mu, sd) => Math.exp(-((x - mu) * (x - mu)) / (2 * sd * sd));
+  let phase;
+  if (d <= periodLen) phase = 'men';
+  else if (d >= ov - 5 && d <= ov + 1) phase = 'fert';
+  else if (d < ov - 5) phase = 'foll';
+  else if (d > L - 5) phase = 'pms';
+  else phase = 'lut';
+  let lib = 22 + 70 * g(d, ov - 1, 3.2) + 10 * g(d, L + 1, 2);           /* peaks just before ovulation */
+  let en = 30 + 55 * g(d, ov - 1, 4.5) + 14 * g(d, ov + 7, 3) - 14 * g(d, L, 3) - 10 * g(d, 2, 2);
+  const fert = phase !== 'fert' ? (d >= ov - 7 && d <= ov + 2 ? 'mid' : 'low') : (d >= ov - 2 && d <= ov ? 'peak' : 'high');
+  return { d: d, phase: phase, lib: Math.round(clamp(lib, 8, 100)), en: Math.round(clamp(en, 10, 100)), fert: fert, ov: ov };
+}
+function hormoneCycle(C) {
+  const L = clamp(C.len, 21, 45), out = [];
+  for (let d = 1; d <= L; d++) out.push(hormoneDay(d, L, Math.min(C.periodLen, 8)));
+  return out;
+}
+const HZ_PHASE = {
+  men: ['ช่วงมีประจำเดือน', 'ฮอร์โมนต่ำสุดของรอบ ร่างกายต้องการพัก ความต้องการและพลังงานมักต่ำ'],
+  foll: ['ช่วงหลังมีประจำเดือน', 'เอสโตรเจนค่อยๆ สูงขึ้น พลังงานและอารมณ์ดีขึ้นเรื่อยๆ'],
+  fert: ['ช่วงไข่ตก', 'เอสโตรเจนและเทสโทสเตอโรนขึ้นสูงสุด หลายคนรู้สึกมีพลังและมีความต้องการทางเพศมากที่สุดของเดือน'],
+  lut: ['ช่วงหลังไข่ตก', 'โปรเจสเตอโรนสูงขึ้น ความต้องการลดลง ร่างกายเริ่มช้าลงและอยากพักผ่อน'],
+  pms: ['ช่วงก่อนมีประจำเดือน', 'ฮอร์โมนลดลงเร็ว อาจเหนื่อยง่าย อารมณ์แกว่ง และช่องคลอดแห้งหรือบอบบางกว่าปกติ']
+};
+function hormoneAdvice(h, hormonal) {
+  const items = [];
+  let tone = 'info', title;
+  if (hormonal) {
+    title = 'คุณใช้การคุมกำเนิดแบบฮอร์โมน';
+    items.push('ฮอร์โมนจากยาจะกดการตกไข่ ระดับฮอร์โมนจึงไม่ขึ้นลงตามกราฟนี้ ให้ดูกราฟเป็นแนวโน้มของรอบธรรมชาติเท่านั้น');
+    items.push('ใช้ยาให้ตรงเวลา และใช้ถุงยางอนามัยร่วมด้วยเพื่อป้องกันโรคติดต่อทางเพศสัมพันธ์');
+    return { tone: tone, title: title, items: items };
+  }
+  if (h.phase === 'fert') {
+    tone = 'hi';
+    title = h.fert === 'peak' ? 'ความต้องการสูง และเป็นวันโอกาสตั้งครรภ์สูงที่สุดของเดือน' : 'ความต้องการสูง แต่เป็นช่วงโอกาสตั้งครรภ์สูง (High Fertility)';
+    items.push('หากยังไม่พร้อมมีลูก ใช้ถุงยางอนามัยทุกครั้ง ควบคู่กับวิธีคุมกำเนิดหลัก');
+    items.push('ถ้าถุงยางหลุด ขาด หรือไม่ได้ป้องกัน ยาคุมฉุกเฉินควรกินเร็วที่สุดภายใน 72 ชั่วโมง ยิ่งเร็วยิ่งได้ผล');
+    items.push('ถ้าอยากมีลูก ช่วง 2-3 วันก่อนไข่ตกคือโอกาสดีที่สุด');
+  } else if (h.phase === 'men') {
+    title = 'ช่วงมีเลือดออก ร่างกายบอบบางและติดเชื้อง่ายขึ้น';
+    items.push('ถ้ามีเพศสัมพันธ์ ใช้ถุงยางอนามัย เพราะช่วงมีเลือดโอกาสติดเชื้อบางชนิดสูงขึ้น');
+    items.push('ยังตั้งครรภ์ได้แม้มีประจำเดือน โดยเฉพาะคนที่รอบสั้น เพราะอสุจิอยู่ในร่างกายได้ถึง 5 วัน');
+    items.push('เปลี่ยนผ้าอนามัยสม่ำเสมอ และพักผ่อนให้พอ');
+  } else if (h.phase === 'foll') {
+    title = h.fert === 'mid' ? 'กำลังเข้าใกล้ช่วงโอกาสตั้งครรภ์สูง' : 'โอกาสตั้งครรภ์ต่ำถึงปานกลาง';
+    items.push('อีก ' + Math.max(1, h.ov - 5 - h.d) + ' วันจะเข้าช่วงเสี่ยงตั้งครรภ์ วันตกไข่จริงเลื่อนได้ จึงไม่ควรนับวันแทนการคุมกำเนิด');
+    items.push('ถุงยางอนามัยเป็นวิธีเดียวที่ป้องกันทั้งการตั้งครรภ์และโรคติดต่อทางเพศสัมพันธ์');
+  } else if (h.phase === 'lut') {
+    title = 'โอกาสตั้งครรภ์ลดลง แต่ไม่เป็นศูนย์';
+    items.push('วันไข่ตกเลื่อนได้ในแต่ละรอบ ยังควรคุมกำเนิดตามปกติ');
+    items.push('ถุงยางอนามัยยังจำเป็นเพื่อป้องกันโรคติดต่อทางเพศสัมพันธ์');
+  } else {
+    title = 'ผิวและช่องคลอดบอบบาง ระคายเคืองง่าย';
+    items.push('ใช้สารหล่อลื่นสูตรน้ำ ช่วยลดการเสียดสีและการติดเชื้อ ใช้กับถุงยางได้ทุกชนิด');
+    items.push('เลี่ยงน้ำมันหรือโลชั่นแทนสารหล่อลื่น เพราะทำให้ถุงยางยางพาราขาดได้');
+    items.push('ถ้าเจ็บ แสบ หรือคันหลังมีเพศสัมพันธ์บ่อยๆ ควรปรึกษาแพทย์');
+  }
+  return { tone: tone, title: title, items: items };
 }
 
 function phaseOf(C) {
@@ -1124,6 +1225,34 @@ function summaryText(logs, profile, today, A) {
       + (showF ? '<p class="small muted">จุดสีม่วงบนปฏิทินคือช่วงไข่ตกโดยประมาณ ใช้แทนการคุมกำเนิดไม่ได้</p>' : '')
       + '</div></details>';
   }
+  let hzSel = null;
+  function hzLevel(v) { return v >= 75 ? 'สูงมาก' : v >= 55 ? 'สูง' : v >= 35 ? 'ปานกลาง' : 'ต่ำ'; }
+  function hormoneDayHTML(H, C, d) {
+    const h = H[d - 1], ph = HZ_PHASE[h.phase], contra = prof().contra || 'none';
+    const hormonal = ['pill', 'inject', 'implant', 'hiud'].indexOf(contra) >= 0;
+    const adv = hormoneAdvice(h, hormonal);
+    const date = addDays(C.last.start, d - 1);
+    const meter = (label, v, color) => '<div class="hz-meter"><span>' + label + '</span><b>' + hzLevel(v) + '</b><div class="hz-track"><i style="width:' + v + '%;background:' + color + '"></i></div></div>';
+    return '<div class="hz-dayh"><strong>วันที่ ' + d + ' · ' + esc(ph[0]) + '</strong><span class="hz-sub">' + (date === TODAY ? 'วันนี้' : thDate(date)) + '</span></div>'
+      + '<p>' + esc(ph[1]) + '</p>'
+      + '<div class="hz-meters">' + meter('ความต้องการทางเพศ', h.lib, 'var(--accent)') + meter('พลังงานร่างกาย', h.en, 'var(--fertile)') + '</div>'
+      + '<div class="hz-alert" data-tone="' + adv.tone + '" role="note"><span class="hz-at">' + esc(adv.title) + '</span><ul>' + adv.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+  }
+  function hormoneHTML(C) {
+    const H = hormoneCycle(C), L = H.length;
+    const cdToday = C.cd >= 1 && C.cd <= L ? C.cd : null;
+    if (hzSel === null || hzSel > L) hzSel = cdToday || 1;
+    const bars = H.map(h => '<button type="button" class="hz-bar ' + h.phase + (h.d === cdToday ? ' today' : '') + '" data-act="hz-day" data-d="' + h.d + '" aria-pressed="' + (h.d === hzSel) + '" aria-label="วันที่ ' + h.d + ' ' + HZ_PHASE[h.phase][0] + ' ความต้องการ' + hzLevel(h.lib) + ' พลังงาน' + hzLevel(h.en) + '"><span class="hz-fill" style="height:' + h.lib + '%"></span></button>').join('');
+    const pts = H.map((h, i) => ((i + 0.5) / L * 100).toFixed(2) + ' ' + (100 - h.en).toFixed(1));
+    const late = C.cd > L ? '<p class="hz-note">ตอนนี้เลยรอบที่คาดไว้แล้ว (วันที่ ' + C.cd + ') กราฟแสดงรอบปกติของคุณ</p>' : '';
+    return '<section class="card stack" id="hzCard"><div class="hz-head"><h2>พลังงานและความต้องการ</h2><span class="hz-sub">รอบ ' + L + ' วัน · แตะแท่งเพื่อดูแต่ละวัน</span></div>'
+      + '<div><div class="hz-chart"><div class="hz-bars" style="grid-template-columns:repeat(' + L + ',minmax(0,1fr))">' + bars + '</div>'
+      + '<svg class="hz-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M' + pts.join(' L') + '"/></svg></div>'
+      + '<div class="hz-axis"><span>วันที่ 1</span><span>' + Math.round(L / 2) + '</span><span>' + L + '</span></div></div>'
+      + '<div class="hz-legend"><span><i class="k-lib"></i>ความต้องการทางเพศ</span><span><i class="k-en"></i>พลังงาน</span><span><i class="k-fert"></i>โอกาสตั้งครรภ์สูง</span><span><i class="k-men"></i>มีประจำเดือน</span><span><i class="k-today" style="width:7px;height:7px;border-radius:50%;background:var(--ink)"></i>วันนี้</span></div>'
+      + late + '<div class="hz-day" id="hzDay" aria-live="polite">' + hormoneDayHTML(H, C, hzSel) + '</div>'
+      + '<p class="hz-note">กราฟนี้คือแนวโน้มเฉลี่ยจากฮอร์โมน ความต้องการจริงขึ้นกับความเครียด การนอน และความสัมพันธ์ด้วย ความต้องการสูงไม่ได้แปลว่ายินยอม ถามกันทุกครั้ง และการนับวันใช้แทนการคุมกำเนิดไม่ได้</p></section>';
+  }
   function setupHTML() {
     const p = S.profile;
     return '<section class="card stack"><h2>เริ่มจากประจำเดือนครั้งล่าสุด</h2><p class="muted">ใส่ 3 อย่างนี้ Cozy จะเริ่มนับวันให้ทันที ถ้าจำไม่ได้แน่ชัด ใส่ค่าประมาณก่อนได้</p>'
@@ -1166,7 +1295,7 @@ function summaryText(logs, profile, today, A) {
   function renderHome() {
     const L = logs(), A = analyze(L, prof(), TODAY), C = A.cycle;
     const greeting = callName() !== 'น้อง' ? '<p class="muted small">สวัสดีจ้ะ <strong>' + esc(callName()) + '</strong> วันนี้เป็นยังไงบ้าง?</p>' : '';
-    let h = greeting + calHTML(C, L);
+    let h = greeting + calHTML(C, L) + (C.last ? hormoneHTML(C) : '');
     if (S.started && !C.last) h += cloud.loading ? '<section class="card"><p class="muted">กำลังโหลดข้อมูลของคุณ…</p></section>' : setupHTML();
     h += '<button type="button" class="btn primary block" data-act="log-today">บันทึกวันนี้</button>';
     if (C.last) {
@@ -1807,6 +1936,12 @@ function summaryText(logs, profile, today, A) {
     }
     else if (act === 'send-reset-inapp') sendResetInApp();
     else if (act === 'change-pass') changePasswordInApp();
+    else if (act === 'hz-day') {
+      hzSel = Number(t.dataset.d);
+      const Cc = cycleInfo(logs(), prof(), TODAY), H = hormoneCycle(Cc);
+      document.querySelectorAll('.hz-bar').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+      $('#hzDay').innerHTML = hormoneDayHTML(H, Cc, hzSel);
+    }
     else if (act === 'cal-prev') shiftMonth(-1);
     else if (act === 'cal-next') shiftMonth(1);
     else if (act === 'cal-today') { calMonth = TODAY.slice(0, 7); renderHome(); }
