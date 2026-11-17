@@ -309,6 +309,21 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .hz-at{font-weight:600}
 .hz-alert ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:4px}
 .hz-note{font-size:.875rem;color:var(--ink-2)}
+/* private sexual wellness log */
+details.sx{scroll-margin-top:5rem;border:1.5px solid var(--line);border-radius:var(--r-card);background:var(--surface)}
+details.sx>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;font-weight:600}
+details.sx>summary::-webkit-details-marker{display:none}
+details.sx>summary::after{content:"";margin-left:auto;width:.55rem;height:.55rem;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:rotate(45deg);flex:none}
+details.sx[open]>summary::after{transform:rotate(-135deg)}
+.sx-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:16px}
+.lock{display:inline-flex;align-items:center;gap:6px;font-size:.8125rem;font-weight:500;color:var(--ink-2)}
+.lock svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.sat{display:flex;gap:6px;flex-wrap:wrap}
+.sat .chip{min-width:2.75rem;text-align:center}
+.sx-phase{display:flex;flex-direction:column;gap:8px}
+.sx-row{display:grid;grid-template-columns:7.5rem 1fr 2.2rem;gap:10px;align-items:center;font-size:.875rem}
+.sx-row .hz-track{margin-top:0;height:8px}
+.sx-row b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion: reduce){ .switch::after{transition:none} }
 </style>
 </head>
@@ -439,6 +454,24 @@ const COND = [['pcos', 'PCOS'], ['thyroid', 'ไทรอยด์'], ['diabetes
 const CONTRA = [['none', 'ไม่ได้ใช้'], ['condom', 'ถุงยางอนามัย'], ['pill', 'ยาเม็ดคุมกำเนิด'], ['inject', 'ยาฉีดคุมกำเนิด'], ['implant', 'ยาฝังคุมกำเนิด'], ['hiud', 'ห่วงอนามัยชนิดฮอร์โมน'], ['cuiud', 'ห่วงอนามัยชนิดทองแดง']];
 const labelOf = (list, k) => { const x = list.find(i => String(i[0]) === String(k)); return x ? x[1] : ''; };
 
+const SX_ACT = [['partner', 'มีเพศสัมพันธ์กับคู่'], ['solo', 'กิจกรรมส่วนตัวคนเดียว']];
+const SX_PROT = [['condom', 'ใช้ถุงยาง'], ['broke', 'ถุงยางแตก/หลุด'], ['none', 'ไม่ได้ป้องกัน'], ['na', 'ไม่เกี่ยว (ไม่มีการสอดใส่)']];
+const SX_LUBE = [['none', 'ไม่ได้ใช้'], ['water', 'สูตรน้ำ'], ['silicone', 'สูตรซิลิโคน'], ['oil', 'น้ำมัน/โลชั่น']];
+const SX_PAIN = [['0', 'ไม่เจ็บ'], ['1', 'เจ็บนิดหน่อย'], ['2', 'เจ็บปานกลาง'], ['3', 'เจ็บมาก']];
+const SX_AFTER = [['irr', 'ระคายเคือง/แสบ'], ['itch', 'คัน'], ['bleed', 'มีเลือดออก'], ['burn', 'แสบขัดเวลาปัสสาวะ'], ['odor', 'มีกลิ่นผิดปกติ']];
+function normSx(x) {
+  if (!x || !SX_ACT.some(a => a[0] === x.act)) return null;
+  const pick = (list, v, d) => list.some(a => a[0] === String(v)) ? String(v) : d;
+  return {
+    act: x.act,
+    prot: pick(SX_PROT, x.prot, x.act === 'solo' ? 'na' : 'condom'),
+    ec: !!x.ec,
+    pain: clamp(Math.round(num(x.pain)), 0, 3),
+    after: Array.isArray(x.after) ? x.after.filter(k => SX_AFTER.some(a => a[0] === k)) : [],
+    lube: pick(SX_LUBE, x.lube, 'none'),
+    sat: clamp(Math.round(num(x.sat)), 0, 5)
+  };
+}
 function normEntry(e) {
   e = e || {};
   return {
@@ -447,7 +480,8 @@ function normEntry(e) {
     dis: DIS.some(x => x[0] === e.dis) ? e.dis : 'normal',
     amt: AMT.some(x => x[0] === e.amt) ? e.amt : 's',
     sym: Array.isArray(e.sym) ? e.sym.filter(s => ALLSYM.some(x => x[0] === s)) : [],
-    note: String(e.note || '').slice(0, 300)
+    note: String(e.note || '').slice(0, 300),
+    sx: normSx(e.sx)
   };
 }
 
@@ -552,6 +586,78 @@ function hormoneAdvice(h, hormonal) {
     items.push('ถ้าเจ็บ แสบ หรือคันหลังมีเพศสัมพันธ์บ่อยๆ ควรปรึกษาแพทย์');
   }
   return { tone: tone, title: title, items: items };
+}
+
+/* Private sexual-wellness risk check. Rule-based, runs only on this device. */
+function cycleDayOf(C, date) {
+  let start = null;
+  C.P.forEach(p => { if (p.start <= date) start = p.start; });
+  if (!start) return null;
+  const cd = diff(date, start) + 1;
+  return cd >= 1 && cd <= 45 ? cd : null;
+}
+function sxReview(logs, profile, today) {
+  const C = cycleInfo(logs, profile, today);
+  const contra = (profile && profile.contra) || 'none';
+  const hormonal = ['pill', 'inject', 'implant', 'hiud', 'cuiud'].indexOf(contra) >= 0;
+  const rows = Object.keys(logs).filter(d => d <= today && diff(today, d) <= 90 && logs[d].sx).sort().map(d => ({ d: d, x: logs[d].sx, ago: diff(today, d) }));
+  const out = [];
+  const phaseAt = d => { const cd = cycleDayOf(C, d); return cd ? hormoneDay(Math.min(cd, C.len), clamp(C.len, 21, 45), Math.min(C.periodLen, 8)).phase : null; };
+  const risky = rows.filter(r => r.x.act === 'partner' && (r.x.prot === 'none' || r.x.prot === 'broke'));
+  /* pregnancy: most recent unprotected time in the last 21 days */
+  const preg = risky.filter(r => r.ago <= 21 && !hormonal);
+  if (preg.length) {
+    const r = preg[preg.length - 1], fert = phaseAt(r.d) === 'fert', items = [];
+    const when = r.ago === 0 ? 'วันนี้' : r.ago + ' วันก่อน';
+    if (r.x.ec) {
+      items.push('กินยาคุมฉุกเฉินแล้ว ประจำเดือนรอบถัดไปอาจมาเร็วหรือช้ากว่าปกติ ถ้าเลยกำหนดเกิน 7 วัน ให้ตรวจการตั้งครรภ์');
+    } else if (r.ago <= 3) {
+      items.push('ยังทันใช้ยาคุมฉุกเฉิน ควรกินเร็วที่สุด ภายใน 72 ชั่วโมงหลังมีเพศสัมพันธ์ ยิ่งเร็วยิ่งได้ผล หาซื้อได้ที่ร้านขายยา');
+    } else if (r.ago <= 5) {
+      items.push('เลย 72 ชั่วโมงแล้ว แต่ยังมีทางเลือกที่ใช้ได้ถึง 5 วัน เช่น ยาคุมฉุกเฉินบางชนิดหรือห่วงอนามัยทองแดง ปรึกษาเภสัชกรหรือแพทย์วันนี้');
+    }
+    items.push(r.ago >= 21 ? 'ตอนนี้ตรวจการตั้งครรภ์ด้วยชุดตรวจปัสสาวะได้แล้ว' : 'ตรวจการตั้งครรภ์ได้แม่นเมื่อผ่านไปประมาณ 3 สัปดาห์หลังมีเพศสัมพันธ์ หรือเมื่อประจำเดือนเลยกำหนด');
+    out.push({ tone: (fert && !r.x.ec) || (!r.x.ec && r.ago <= 5) ? 'hi' : 'info', title: (r.x.ec ? 'กินยาคุมฉุกเฉินแล้วหลัง' : fert ? 'ความเสี่ยงตั้งครรภ์สูง: ' : 'มีความเสี่ยงตั้งครรภ์: ') + (r.x.prot === 'broke' ? 'ถุงยางแตก/หลุด ' : 'ไม่ได้ป้องกัน ') + when + (fert && !r.x.ec ? ' ตรงกับช่วงไข่ตก' : ''), items: items });
+  }
+  /* infections from unprotected sex */
+  if (risky.length) {
+    const r = risky[risky.length - 1], items = [];
+    if (r.ago <= 3) items.push('ถ้าไม่แน่ใจสถานะเอชไอวีของคู่ ยาเป๊ป (PEP) ต้องเริ่มภายใน 72 ชั่วโมง ไปโรงพยาบาลหรือคลินิกนิรนามได้เลย หรือโทรปรึกษา 1663');
+    items.push('ตรวจโรคติดต่อทางเพศสัมพันธ์ได้ เช่น หนองในและหนองในเทียม หลังเสี่ยงประมาณ 2 สัปดาห์ เอชไอวีและซิฟิลิสควรตรวจซ้ำที่ 3 เดือน');
+    items.push('ถุงยางอนามัยเป็นวิธีเดียวที่ป้องกันได้ทั้งการตั้งครรภ์และการติดเชื้อ');
+    out.push({ tone: r.ago <= 3 ? 'hi' : 'info', title: 'เสี่ยงติดเชื้อจากเพศสัมพันธ์ที่ไม่ได้ป้องกัน (' + (r.ago === 0 ? 'วันนี้' : r.ago + ' วันก่อน') + ')', items: items });
+  }
+  const ec30 = rows.filter(r => r.x.ec && r.ago <= 30).length;
+  if (ec30 >= 2) out.push({ tone: 'info', title: 'ใช้ยาคุมฉุกเฉิน ' + ec30 + ' ครั้งใน 30 วัน', items: ['ยาคุมฉุกเฉินได้ผลน้อยกว่าการคุมกำเนิดประจำ และทำให้ประจำเดือนแปรปรวน ลองปรึกษาแพทย์หรือเภสัชกรเรื่องวิธีคุมที่เหมาะกับคุณ'] });
+  /* pain, irritation, bleeding */
+  const pain = rows.filter(r => r.x.pain >= 2), bleed = rows.filter(r => r.x.after.indexOf('bleed') >= 0);
+  if (pain.length >= 2 || bleed.length) {
+    const items = [];
+    if (pain.length >= 2) items.push('เจ็บระดับปานกลางขึ้นไป ' + pain.length + ' ครั้งใน 3 เดือน อาการเจ็บซ้ำๆ อาจเกี่ยวกับช่องคลอดแห้ง การติดเชื้อ เยื่อบุโพรงมดลูกเจริญผิดที่ หรือกล้ามเนื้อเกร็ง ควรให้แพทย์ตรวจ');
+    if (bleed.length) items.push('มีเลือดออกหลังทำ ' + bleed.length + ' ครั้ง ควรตรวจภายในและคัดกรองมะเร็งปากมดลูก แม้เกิดครั้งเดียว');
+    out.push({ tone: 'hi', title: 'ควรปรึกษาแพทย์', items: items });
+  } else if (pain.length === 1) {
+    out.push({ tone: 'info', title: 'มีอาการเจ็บ 1 ครั้ง', items: ['ใช้สารหล่อลื่นสูตรน้ำ และใช้เวลาเล้าโลมให้นานขึ้น ถ้าเจ็บซ้ำควรปรึกษาแพทย์'] });
+  }
+  const irr = rows.filter(r => r.ago <= 30 && r.x.after.some(k => k === 'irr' || k === 'itch' || k === 'odor')), oil = rows.some(r => r.ago <= 30 && r.x.lube === 'oil');
+  const burn = rows.filter(r => r.ago <= 14 && r.x.after.indexOf('burn') >= 0);
+  if (irr.length || oil || burn.length) {
+    const items = [];
+    if (oil) items.push('น้ำมันหรือโลชั่นไม่เหมาะเป็นสารหล่อลื่น ระคายเคืองช่องคลอด และทำให้ถุงยางยางพาราขาดได้ เปลี่ยนเป็นสูตรน้ำ');
+    if (irr.length) items.push(irr.length >= 2 ? 'ระคายเคือง คัน หรือมีกลิ่นหลังทำ ' + irr.length + ' ครั้งใน 30 วัน อาจเป็นเชื้อราหรือช่องคลอดอักเสบจากแบคทีเรีย ควรตรวจภายใน' : 'ระคายเคืองหลังทำ ลองสารหล่อลื่นสูตรน้ำที่ไม่มีน้ำหอม ถ้าเป็นซ้ำหรือมีตกขาวผิดปกติ ควรตรวจ');
+    if (burn.length) items.push('แสบขัดเวลาปัสสาวะหลังมีเพศสัมพันธ์ อาจเป็นกระเพาะปัสสาวะอักเสบ ดื่มน้ำมากๆ ถ้าเกิน 2 วันหรือมีไข้ ควรพบแพทย์');
+    out.push({ tone: irr.length >= 2 ? 'hi' : 'info', title: 'การระคายเคืองและการติดเชื้อ', items: items });
+  }
+  const recent = rows.filter(r => r.ago <= 14);
+  if (recent.length) out.push({ tone: 'info', title: 'ดูแลความสะอาดหลังทำ', items: [
+    'ปัสสาวะหลังมีเพศสัมพันธ์ ช่วยลดโอกาสกระเพาะปัสสาวะอักเสบ',
+    'ล้างภายนอกด้วยน้ำสะอาดก็พอ ไม่ต้องสวนล้างช่องคลอด เพราะทำให้เชื้อดีหายและติดเชื้อง่ายขึ้น',
+    'อุปกรณ์ส่วนตัวล้างด้วยสบู่อ่อนกับน้ำก่อนและหลังใช้ และสวมถุงยางถ้าใช้ร่วมกับคนอื่น'] });
+  /* satisfaction by cycle phase */
+  const by = {};
+  rows.forEach(r => { if (!r.x.sat) return; const ph = phaseAt(r.d); if (!ph) return; (by[ph] = by[ph] || []).push(r.x.sat); });
+  const sat = Object.keys(by).map(k => ({ ph: k, n: by[k].length, avg: mean(by[k]) }));
+  return { rows: rows, alerts: out, sat: sat, hormonal: hormonal };
 }
 
 function phaseOf(C) {
@@ -831,7 +937,7 @@ function summaryText(logs, profile, today, A) {
 
   /* ---------- state ---------- */
   let LS = 'cozy:web:anon';
-  const defShare = () => ({ on: false, code: '', nick: '', details: true, next: false });
+  const defShare = () => ({ on: false, code: '', nick: '', details: true, next: false, mood: false });
   const defProfile = () => ({
     nickname: '', nickAsked: false, avatar: '', devices: [],
     age: '', height: '', weight: '', cond: [], condOther: '', meds: '', contra: 'none',
@@ -933,9 +1039,10 @@ function summaryText(logs, profile, today, A) {
     put(-9, { dis: 'white', amt: 's', sym: ['acne'] });
     put(-6, { dis: 'white', amt: 'm' });
     put(-5, { dis: 'yg', amt: 'm', pain: 1 });
-    put(-3, { sym: ['mood', 'breast'] });
     put(-2, { pain: 2, sym: ['mood', 'bloat'] });
     put(-1, { pain: 2, sym: ['acne', 'bloat', 'breast'] });
+    put(-10, { dis: 'clear', amt: 'm', sx: { act: 'partner', prot: 'condom', lube: 'water', sat: 4 } });
+    put(-3, { sym: ['mood', 'breast'], sx: { act: 'partner', prot: 'condom', pain: 1, lube: 'none', sat: 3, after: ['irr'] } });
     return { profile: Object.assign(defProfile(), { age: '24', height: '160', weight: '52', cycleLen: '30', periodLen: '5' }), logs: L };
   })();
   const logs = () => S.started ? S.logs : DEMO.logs;
@@ -1075,7 +1182,15 @@ function summaryText(logs, profile, today, A) {
     const A = analyze(S.logs, S.profile, TODAY);
     return { v: 1, owner: cloud.user.uid, code: sh.code, nick: String(sh.nick || S.profile.nickname || '').slice(0, 40), level: A.level, urgent: !!A.urgent,
       items: sh.details ? A.findings.slice(0, 12).map(f => ({ l: f.level, t: f.title })) : [],
-      next: sh.next && A.cycle.next ? A.cycle.next : '' };
+      next: sh.next && A.cycle.next ? A.cycle.next : '' , ...moodShare(sh, A.cycle) };
+  }
+  /* hormone-trend desire only (never the private log); omitted unless the owner turns it on */
+  function moodShare(sh, C) {
+    if (!sh.mood || !C.last) return {};
+    const hormonal = ['pill', 'inject', 'implant', 'hiud'].indexOf(S.profile.contra || 'none') >= 0;
+    if (hormonal) return { mood: { lib: '', ph: '', note: 'hormonal' } };
+    const H = hormoneCycle(C), cd = Math.min(Math.max(C.cd, 1), H.length), h = H[cd - 1];
+    return { mood: { lib: hzLevel(h.lib), ph: HZ_PHASE[h.phase][0], note: '' } };
   }
   async function initShare() {
     if (cloud.state !== 'in') return;
@@ -1104,7 +1219,8 @@ function summaryText(logs, profile, today, A) {
         if (body) { await F.setDoc(shareRef(body.code), Object.assign({ updated: TODAY }, body)); sharePub = body.code; }
         if (seq === loadSeq) { shareLast = j; shareTries = 0; }
       } catch (e) {
-        if (seq === loadSeq && body && e && e.code === 'permission-denied' && shareTries < 3) { shareTries++; S.profile.share.code = genCode(); push('profile'); shareAgain = true; renderShare(); }
+        if (seq === loadSeq && body && body.mood && e && e.code === 'permission-denied') { cloud.syncErr = 'permission-denied'; syncNote(); toast('แชร์อารมณ์ทางเพศไม่สำเร็จ เจ้าของแอพต้องอัปเดตกฎ Firestore ก่อน'); }
+        else if (seq === loadSeq && body && e && e.code === 'permission-denied' && shareTries < 3) { shareTries++; S.profile.share.code = genCode(); push('profile'); shareAgain = true; renderShare(); }
         else if (seq === loadSeq) { cloud.syncErr = (e && e.code) || 'error'; syncNote(); }
       }
       shareBusy = false;
@@ -1148,6 +1264,7 @@ function summaryText(logs, profile, today, A) {
         const items = Array.isArray(d.items) ? d.items.slice(0, 12) : [];
         inner = '<div class="pair-h"><strong>' + esc(d.nick || 'คนใกล้ชิดของคุณ') + '</strong><span class="pill" data-level="' + lv + '">' + (d.urgent ? 'ควรพบแพทย์ทันที' : LEVELS[lv]) + '</span></div>'
           + (items.length ? '<ul>' + items.map(i => '<li>' + esc(i && i.t) + '</li>').join('') + '</ul>' : (lv === 0 ? '<p class="small muted">ไม่พบสิ่งผิดปกติจากบันทึกล่าสุด</p>' : ''))
+          + (d.mood && typeof d.mood === 'object' ? (d.mood.note === 'hormonal' ? '<p class="small">ใช้ยาคุมฮอร์โมน แนวโน้มอารมณ์ทางเพศตามรอบเดือนจึงใช้ไม่ได้</p>' : '<p class="small">อารมณ์ทางเพศตามฮอร์โมนช่วงนี้: <strong>' + esc(String(d.mood.lib || '').slice(0, 12)) + '</strong> · ' + esc(String(d.mood.ph || '').slice(0, 30)) + '</p><p class="small muted">เป็นแนวโน้มจากรอบเดือน ไม่ใช่ความรู้สึกจริงวันนี้ ถามกันก่อนเสมอ</p>') : '')
           + (d.next && /^\d{4}-\d{2}-\d{2}$/.test(d.next) ? '<p class="small">ประจำเดือนรอบถัดไปคาดว่าเริ่ม ' + esc(thDate(d.next)) + '</p>' : '')
           + (lv === 2 ? '<p class="small"><strong>คุณช่วยได้:</strong> ชวนไปพบแพทย์ ถามว่าอยากให้ไปเป็นเพื่อนไหม</p>' : '')
           + (d.updated && /^\d{4}-\d{2}-\d{2}$/.test(d.updated) ? '<p class="small muted">อัปเดตล่าสุด ' + esc(thDate(d.updated)) + '</p>' : '');
@@ -1253,6 +1370,27 @@ function summaryText(logs, profile, today, A) {
       + late + '<div class="hz-day" id="hzDay" aria-live="polite">' + hormoneDayHTML(H, C, hzSel) + '</div>'
       + '<p class="hz-note">กราฟนี้คือแนวโน้มเฉลี่ยจากฮอร์โมน ความต้องการจริงขึ้นกับความเครียด การนอน และความสัมพันธ์ด้วย ความต้องการสูงไม่ได้แปลว่ายินยอม ถามกันทุกครั้ง และการนับวันใช้แทนการคุมกำเนิดไม่ได้</p></section>';
   }
+  const LOCK = '<span class="lock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>เห็นเฉพาะคุณ ไม่แชร์ให้คู่</span>';
+  function sxHTML() {
+    const R = sxReview(logs(), prof(), TODAY);
+    const alert = a => '<div class="hz-alert" data-tone="' + a.tone + '" role="note"><span class="hz-at">' + esc(a.title) + '</span><ul>' + a.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+    let h = '<section class="card stack" id="sxCard"><div class="hz-head"><h2>สุขอนามัยทางเพศ</h2>' + LOCK + '</div>';
+    if (!R.rows.length) h += '<p class="muted">บันทึกได้ว่าหลังมีเพศสัมพันธ์หรือกิจกรรมส่วนตัว รู้สึกเจ็บ ระคายเคือง หรือพึงพอใจแค่ไหน และป้องกันอย่างไร แอพจะเช็กความเสี่ยงตั้งครรภ์และการติดเชื้อให้</p>';
+    else {
+      const n14 = R.rows.filter(r => r.ago <= 14).length;
+      h += '<p class="muted">บันทึก ' + R.rows.length + ' ครั้งใน 3 เดือน' + (n14 ? ' (' + n14 + ' ครั้งใน 14 วันล่าสุด)' : '') + '</p>';
+      h += R.alerts.map(alert).join('');
+      if (R.sat.length) {
+        const order = ['men', 'foll', 'fert', 'lut', 'pms'];
+        h += '<div class="sx-phase"><span class="label">ความพึงพอใจเฉลี่ยตามช่วงรอบเดือน</span>' + order.filter(k => R.sat.some(x => x.ph === k)).map(k => {
+          const x = R.sat.find(y => y.ph === k);
+          return '<div class="sx-row"><span>' + HZ_PHASE[k][0] + '</span><div class="hz-track"><i style="width:' + (x.avg / 5 * 100).toFixed(0) + '%;background:var(--accent)"></i></div><b>' + x.avg.toFixed(1) + '</b></div>';
+        }).join('') + '<p class="hz-note">จากคะแนน 1-5 ที่บันทึกไว้ ยิ่งบันทึกมาก ยิ่งเห็นแนวโน้มของตัวเองชัด</p></div>';
+      }
+    }
+    return h + '<button type="button" class="btn outline block" data-act="sx-open">บันทึกส่วนตัววันนี้</button>'
+      + '<p class="hz-note">คำแนะนำนี้คำนวณในแอพจากสิ่งที่คุณบันทึก ไม่ได้ส่งให้ AI หรือใครอ่าน และไม่แทนการตรวจโดยแพทย์</p></section>';
+  }
   function setupHTML() {
     const p = S.profile;
     return '<section class="card stack"><h2>เริ่มจากประจำเดือนครั้งล่าสุด</h2><p class="muted">ใส่ 3 อย่างนี้ Cozy จะเริ่มนับวันให้ทันที ถ้าจำไม่ได้แน่ชัด ใส่ค่าประมาณก่อนได้</p>'
@@ -1295,7 +1433,7 @@ function summaryText(logs, profile, today, A) {
   function renderHome() {
     const L = logs(), A = analyze(L, prof(), TODAY), C = A.cycle;
     const greeting = callName() !== 'น้อง' ? '<p class="muted small">สวัสดีจ้ะ <strong>' + esc(callName()) + '</strong> วันนี้เป็นยังไงบ้าง?</p>' : '';
-    let h = greeting + calHTML(C, L) + (C.last ? hormoneHTML(C) : '');
+    let h = greeting + calHTML(C, L) + (C.last ? hormoneHTML(C) : '') + sxHTML();
     if (S.started && !C.last) h += cloud.loading ? '<section class="card"><p class="muted">กำลังโหลดข้อมูลของคุณ…</p></section>' : setupHTML();
     h += '<button type="button" class="btn primary block" data-act="log-today">บันทึกวันนี้</button>';
     if (C.last) {
@@ -1309,10 +1447,10 @@ function summaryText(logs, profile, today, A) {
   }
 
   /* ---------- log + analysis ---------- */
-  let logDate = TODAY, logPane = 'form', draft = null;
+  let logDate = TODAY, logPane = 'form', draft = null, sxOpen = false;
   const blankEntry = () => normEntry({});
   function loadDraft() { draft = S.started && S.logs[logDate] ? JSON.parse(JSON.stringify(S.logs[logDate])) : blankEntry(); }
-  function openLog(d) { logDate = d; logPane = 'form'; loadDraft(); if (route === 'log') { renderLog(); window.scrollTo(0, 0); } else location.hash = '#log'; }
+  function openLog(d) { if (d !== logDate) sxOpen = false; logDate = d; logPane = 'form'; loadDraft(); if (route === 'log') { renderLog(); window.scrollTo(0, 0); } else location.hash = '#log'; }
   const painText = n => n + '/10 · ' + (n === 0 ? 'ไม่ปวด' : n <= 3 ? 'ปวดเล็กน้อย' : n <= 6 ? 'ปวดปานกลาง' : 'ปวดมาก');
   function formHTML() {
     const d = draft, isToday = logDate === TODAY, exists = S.started && !!S.logs[logDate];
@@ -1326,10 +1464,27 @@ function summaryText(logs, profile, today, A) {
       + '<div class="field" id="amtField"' + (d.dis === 'normal' ? ' hidden' : '') + '><span class="label">ปริมาณตกขาว</span><div class="chips">' + chips(AMT, 'amt', d.amt) + '</div></div>'
       + '<div class="field"><span class="label">อาการทั่วไป</span><div class="chips">' + syms(SYM_GEN) + '</div></div>'
       + '<div class="field"><span class="label">อาการที่ควรจับตา</span><div class="chips">' + syms(SYM_RED) + '</div></div>'
+      + sxFormHTML()
       + '<div class="field"><label class="label" for="noteInput">โน้ตเพิ่มเติม</label><textarea class="input" id="noteInput" rows="2" maxlength="300" placeholder="เช่น กินยาแก้ปวด 1 เม็ด นอนดึก">' + esc(d.note) + '</textarea></div>'
       + '</div>'
       + '<div class="inline wide"><button type="button" class="btn primary" data-act="save-log">บันทึก</button>' + (exists ? '<button type="button" class="btn danger" data-act="del-log">ลบบันทึกนี้</button>' : '') + '</div>';
   }
+  function sxFormHTML() {
+    const x = draft.sx || {}, on = !!draft.sx;
+    const chips = (list, k, cur) => list.map(a => '<button type="button" class="chip" data-act="sx-set" data-k="' + k + '" data-v="' + a[0] + '" aria-pressed="' + (String(cur) === a[0]) + '">' + a[1] + '</button>').join('');
+    let h = '<details class="sx" id="sxBox"' + (on || sxOpen ? ' open' : '') + '><summary>สุขอนามัยทางเพศ (ส่วนตัว)</summary><div class="sx-body">' + LOCK
+      + '<div class="field"><span class="label">วันนี้มี</span><div class="chips">' + chips(SX_ACT, 'act', x.act || '') + (on ? '<button type="button" class="chip" data-act="sx-clear">ไม่มี / ล้าง</button>' : '') + '</div></div>';
+    if (on) {
+      h += (x.act === 'partner' ? '<div class="field"><span class="label">การป้องกัน</span><div class="chips">' + chips(SX_PROT, 'prot', x.prot) + '</div></div>' : '')
+        + '<div class="field"><span class="label">การคุมกำเนิดเพิ่มเติม</span><div class="chips"><button type="button" class="chip" data-act="sx-tog" data-k="ec" aria-pressed="' + !!x.ec + '">กินยาคุมฉุกเฉิน</button></div></div>'
+        + '<div class="field"><span class="label">อาการเจ็บระหว่างหรือหลังทำ</span><div class="chips">' + chips(SX_PAIN, 'pain', String(x.pain || 0)) + '</div></div>'
+        + '<div class="field"><span class="label">อาการหลังทำ</span><div class="chips">' + SX_AFTER.map(a => '<button type="button" class="chip" data-act="sx-after" data-v="' + a[0] + '" aria-pressed="' + (x.after.indexOf(a[0]) >= 0) + '">' + a[1] + '</button>').join('') + '</div></div>'
+        + '<div class="field"><span class="label">สารหล่อลื่น</span><div class="chips">' + chips(SX_LUBE, 'lube', x.lube) + '</div></div>'
+        + '<div class="field"><span class="label">ความพึงพอใจ (1 น้อย - 5 มาก)</span><div class="chips sat">' + [1, 2, 3, 4, 5].map(n => '<button type="button" class="chip" data-act="sx-set" data-k="sat" data-v="' + n + '" aria-pressed="' + (x.sat === n) + '">' + n + '</button>').join('') + '</div></div>';
+    }
+    return h + '</div></details>';
+  }
+  function repaintSx() { const b = $('#sxBox'); if (!b) return; sxOpen = true; b.outerHTML = sxFormHTML(); }
   function hospHTML() {
     const p = S.started ? S.profile : defProfile();
     let h = '<section class="card stack"><h2>ปรึกษาและรับการรักษา</h2>';
@@ -1470,7 +1625,7 @@ function summaryText(logs, profile, today, A) {
   }
   function openPrivacy() {
     $('#policyText').textContent = window.COZY_PRIVACY || [
-      'ข้อมูลที่เก็บ: อีเมล ชื่อเล่น รูปโปรไฟล์ ข้อมูลร่างกาย บันทึกรอบเดือนและอาการที่คุณกรอก โรงพยาบาลที่คุณบันทึก และพิกัดบ้านถ้าคุณกดบันทึก',
+      'ข้อมูลที่เก็บ: อีเมล ชื่อเล่น รูปโปรไฟล์ ข้อมูลร่างกาย บันทึกรอบเดือน อาการ และบันทึกสุขอนามัยทางเพศที่คุณกรอก โรงพยาบาลที่คุณบันทึก และพิกัดบ้านถ้าคุณกดบันทึก',
       'เก็บเพื่ออะไร: เพื่อแสดงปฏิทิน ผลคัดกรอง และสถานะที่คุณเลือกแชร์ให้คนที่มีรหัสจับคู่ของคุณ',
       'เก็บที่ไหน: บนบริการ Firebase ของ Google และสำเนาในเบราว์เซอร์ของเครื่องที่คุณเข้าสู่ระบบ',
       'ใครเห็นได้: คุณ และผู้ดูแลระบบของแอพซึ่งเข้าถึงฐานข้อมูลได้เพื่อดูแลระบบ คนที่มีรหัสจับคู่ของคุณเห็นเฉพาะสถานะที่คุณเปิดแชร์',
@@ -1805,6 +1960,7 @@ function summaryText(logs, profile, today, A) {
           + '<div class="field"><label class="label" for="shNick">ชื่อที่ให้คนใกล้ชิดเห็น</label><input class="input" id="shNick" value="' + esc(sh.nick || S.profile.nickname) + '" maxlength="40" placeholder="เช่น มายด์"></div>'
           + '<label class="check"><input type="checkbox" id="shDetails"' + (sh.details ? ' checked' : '') + '><span>แชร์หัวข้อของสิ่งที่พบด้วย เช่น "ประจำเดือนเลยกำหนดมา 9 วัน"</span></label>'
           + '<label class="check"><input type="checkbox" id="shNext"' + (sh.next ? ' checked' : '') + '><span>แชร์วันที่คาดว่าประจำเดือนรอบถัดไปจะมา</span></label>'
+          + '<label class="check"><input type="checkbox" id="shMood"' + (sh.mood ? ' checked' : '') + '><span>แชร์แนวโน้มอารมณ์ทางเพศตามฮอร์โมน เช่น "สูง · ช่วงไข่ตก" (ไม่แชร์บันทึกส่วนตัว)</span></label>'
           + '<p class="small muted">วิธีใช้: ส่งลิงก์แอพและรหัสนี้ให้เขา ให้เขาสมัครสมาชิก เปิดแท็บ จับคู่ แล้วใส่รหัสของคุณ</p>'
           + '<button type="button" class="btn sm" data-act="share-regen">สร้างรหัสใหม่ (รหัสเดิมจะใช้ไม่ได้)</button>';
       }
@@ -1959,11 +2115,21 @@ function summaryText(logs, profile, today, A) {
       t.parentNode.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
       if (k === 'dis') $('#amtField').hidden = draft.dis === 'normal';
     }
+    else if (act === 'sx-set') {
+      const k = t.dataset.k, v = t.dataset.v;
+      if (k === 'act') { draft.sx = normSx(Object.assign({}, draft.sx || {}, { act: v, prot: v === 'solo' ? 'na' : ((draft.sx && draft.sx.prot !== 'na') ? draft.sx.prot : 'condom') })); }
+      else { draft.sx[k] = (k === 'pain' || k === 'sat') ? Number(v) : v; }
+      repaintSx();
+    }
+    else if (act === 'sx-tog') { draft.sx[t.dataset.k] = !draft.sx[t.dataset.k]; repaintSx(); }
+    else if (act === 'sx-after') { const a = draft.sx.after, i = a.indexOf(t.dataset.v); if (i >= 0) a.splice(i, 1); else a.push(t.dataset.v); repaintSx(); }
+    else if (act === 'sx-clear') { draft.sx = null; repaintSx(); }
+    else if (act === 'sx-open') { sxOpen = true; openLog(TODAY); setTimeout(() => { const b = $('#sxBox'); if (b) { b.open = true; b.scrollIntoView({ block: 'start' }); } }, 60); }
     else if (act === 'sym') { const v = t.dataset.v, i = draft.sym.indexOf(v); if (i >= 0) draft.sym.splice(i, 1); else draft.sym.push(v); t.setAttribute('aria-pressed', String(i < 0)); }
     else if (act === 'save-log') {
       if (!needLogin()) return;
       S.logs[logDate] = normEntry(draft); push(monthKey(logDate)); syncShare();
-      logPane = 'result'; render(); window.scrollTo(0, 0); toast('บันทึกแล้ว');
+      sxOpen = false; logPane = 'result'; render(); window.scrollTo(0, 0); toast('บันทึกแล้ว');
     }
     else if (act === 'del-log') { delete S.logs[logDate]; push(monthKey(logDate)); syncShare(); loadDraft(); renderLog(); toast('ลบบันทึกแล้ว'); }
     else if (act === 'copy') copy(t.dataset.copy);
@@ -2017,9 +2183,9 @@ function summaryText(logs, profile, today, A) {
   });
   document.addEventListener('change', function (ev) {
     const id = ev.target.id;
-    if (id === 'shNick' || id === 'shDetails' || id === 'shNext') {
+    if (id === 'shNick' || id === 'shDetails' || id === 'shNext' || id === 'shMood') {
       const sh = S.profile.share;
-      sh.nick = val('shNick'); sh.details = $('#shDetails').checked; sh.next = $('#shNext').checked;
+      sh.nick = val('shNick'); sh.details = $('#shDetails').checked; sh.next = $('#shNext').checked; sh.mood = $('#shMood').checked;
       push('profile'); syncShare();
     } else if (id === 'avatarFile' && ev.target.files && ev.target.files[0]) {
       handleAvatarUpload(ev.target.files[0]);
