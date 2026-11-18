@@ -252,7 +252,7 @@ details.more[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 
 /* tab bar + toast */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.tabs-in{max-width:30rem;margin-inline:auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tabs-in{max-width:30rem;margin-inline:auto;display:grid;grid-template-columns:repeat(4,1fr)}
 .tab{color:var(--ink-2);font-size:.8125rem;line-height:1.4;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;text-decoration:none;border-top:3px solid transparent;margin-top:-1px}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-current="page"]{color:var(--accent);font-weight:600;border-top-color:var(--accent)}
@@ -324,6 +324,37 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 .sx-row{display:grid;grid-template-columns:7.5rem 1fr 2.2rem;gap:10px;align-items:center;font-size:.875rem}
 .sx-row .hz-track{margin-top:0;height:8px}
 .sx-row b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+/* opening countdown */
+.intro{position:fixed;inset:0;z-index:25;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding-block:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transition:opacity .45s ease,transform .45s ease}
+.intro.out{opacity:0;transform:scale(.97);pointer-events:none}
+.intro-k{font-size:1.0625rem;color:var(--ink-2);font-weight:500}
+.intro-n{font-family:var(--font-display);font-weight:500;font-size:6.5rem;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.intro-n.word{font-size:3.5rem}
+.intro-u{font-family:var(--font-display);font-size:1.5rem}
+.intro-d{color:var(--ink-2)}
+.intro-note{max-width:22rem;font-size:.9375rem;color:var(--warn);background:var(--warn-bg);border-radius:12px;padding:8px 12px}
+.intro .btn{margin-top:18px}
+.cal-shift{font-size:.875rem;color:var(--warn)}
+/* chat photo */
+.msg.pic{padding:6px;background:var(--surface-2)}
+.msg.pic img{display:block;max-width:220px;max-height:260px;border-radius:12px}
+.attach{flex:none;width:2.75rem;min-height:2.75rem;border-radius:var(--r-ctl);border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.attach svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* membership tiers */
+.tiers{display:flex;flex-direction:column;gap:12px}
+.tier{border:1.5px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.tier.cur{border-color:var(--ok)}
+.tier.best{border-color:var(--accent)}
+.tier-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tier-h strong{font-family:var(--font-display);font-weight:500;font-size:1.125rem}
+.tier-p{font-family:var(--font-display);color:var(--accent);font-size:1.125rem;white-space:nowrap}
+.tier ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:3px;font-size:.9375rem}
+.save{font-size:.8125rem;font-weight:600;color:var(--ok)}
+.rewards{display:flex;flex-direction:column;gap:6px}
+.reward{display:flex;justify-content:space-between;gap:10px;font-size:.9375rem;border-top:1px dashed var(--line);padding-top:6px}
+.reward b{white-space:nowrap;color:var(--accent);font-variant-numeric:tabular-nums}
+.back-row{display:flex;align-items:center;gap:10px}
+@media (prefers-reduced-motion: reduce){ .intro{transition:none} }
 @media (prefers-reduced-motion: reduce){ .switch::after{transition:none} }
 </style>
 </head>
@@ -348,6 +379,8 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
       <button type="button" class="btn block" data-act="plus-open">ถามเรื่องอื่นได้ทุกเรื่อง<span class="tag">Plus</span></button>
       <form class="composer" id="composer">
         <label class="sr" for="chatInput">พิมพ์อาการหรือคำถาม</label>
+        <label class="attach" for="chatPhoto" title="แนบรูป" aria-label="แนบรูปให้พี่โคซี่ดู"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></label>
+        <input type="file" id="chatPhoto" accept="image/*" hidden>
         <input class="input" id="chatInput" placeholder="พิมพ์อาการหรือคำถาม" autocomplete="off" maxlength="300">
         <button class="btn primary" id="chatSend" type="submit">ส่ง</button>
       </form>
@@ -398,13 +431,11 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 <!-- Sheet: Cozy Plus -->
 <div class="sheet" id="plus" role="dialog" aria-modal="true" aria-labelledby="plusT" hidden>
   <div class="sheet-in stack">
-    <h2 id="plusT">Cozy Plus</h2>
-    <p class="muted">ถามพี่โคซี่ได้มากกว่าหัวข้อฟรี</p>
-    <ul class="plus-list"><li>ถามได้ทุกเรื่อง ไม่จำกัดหัวข้อ</li><li>คำตอบเจาะจงจากบันทึกของคุณ</li><li>คุยต่อเนื่อง จำเรื่องที่เคยเล่าไว้</li></ul>
+    <h2 id="plusT">แพ็กเกจสมาชิก Cozy</h2>
     <div class="price" id="plusPrice"></div>
     <p class="small muted">การบันทึก ผลวิเคราะห์ ตัวช่วยเมนไม่มา และการจับคู่ ใช้ฟรีตลอด</p>
     <div class="stack" id="plusAct"></div>
-    <button type="button" class="btn block" data-act="sheet-close" data-close>ไว้ก่อน</button>
+    <button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>
   </div>
 </div>
 
@@ -418,12 +449,12 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 </div>
 
 <input type="file" id="avatarFile" accept="image/*" hidden>
+<div class="intro" id="intro" hidden role="dialog" aria-label="วันนับถอยหลังประจำเดือน"></div>
 
 <nav class="tabs" id="tabs" aria-label="เมนูหลัก" hidden><div class="tabs-in">
   <a class="tab" href="#home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>หน้าหลัก</span></a>
   <a class="tab" href="#log" data-tab="log"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>บันทึก</span></a>
   <a class="tab" href="#chat" data-tab="chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><span>พี่โคซี่</span></a>
-  <a class="tab" href="#me" data-tab="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5"/></svg><span>ของฉัน</span></a>
   <a class="tab" href="#pair" data-tab="pair"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/></svg><span>จับคู่</span></a>
 </div></nav>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -472,6 +503,12 @@ function normSx(x) {
     sat: clamp(Math.round(num(x.sat)), 0, 5)
   };
 }
+const PILL_T = [['none', 'ไม่ได้กิน'], ['daily', 'ยาคุมรายเดือน'], ['ec', 'ยาคุมฉุกเฉิน']];
+const PILL_S = [['ok', 'กินตรงเวลา'], ['late', 'กินช้ากว่าปกติ'], ['miss', 'ลืมกิน']];
+function normPill(x) {
+  if (!x || (x.t !== 'daily' && x.t !== 'ec')) return null;
+  return x.t === 'daily' ? { t: 'daily', s: ['ok', 'late', 'miss'].indexOf(x.s) >= 0 ? x.s : 'ok' } : { t: 'ec', n: num(x.n) === 2 ? 2 : 1 };
+}
 function normEntry(e) {
   e = e || {};
   return {
@@ -481,7 +518,8 @@ function normEntry(e) {
     amt: AMT.some(x => x[0] === e.amt) ? e.amt : 's',
     sym: Array.isArray(e.sym) ? e.sym.filter(s => ALLSYM.some(x => x[0] === s)) : [],
     note: String(e.note || '').slice(0, 300),
-    sx: normSx(e.sx)
+    sx: normSx(e.sx),
+    pill: normPill(e.pill)
   };
 }
 
@@ -609,6 +647,8 @@ function sxReview(logs, profile, today) {
   if (preg.length) {
     const r = preg[preg.length - 1], fert = phaseAt(r.d) === 'fert', items = [];
     const when = r.ago === 0 ? 'วันนี้' : r.ago + ' วันก่อน';
+    const ecAfter = r.x.ec || [0, 1, 2, 3, 4, 5].some(k => { const e = logs[addDays(r.d, k)]; return e && e.pill && e.pill.t === 'ec'; });
+    if (ecAfter) r.x = Object.assign({}, r.x, { ec: true });
     if (r.x.ec) {
       items.push('กินยาคุมฉุกเฉินแล้ว ประจำเดือนรอบถัดไปอาจมาเร็วหรือช้ากว่าปกติ ถ้าเลยกำหนดเกิน 7 วัน ให้ตรวจการตั้งครรภ์');
     } else if (r.ago <= 3) {
@@ -658,6 +698,19 @@ function sxReview(logs, profile, today) {
   rows.forEach(r => { if (!r.x.sat) return; const ph = phaseAt(r.d); if (!ph) return; (by[ph] = by[ph] || []).push(r.x.sat); });
   const sat = Object.keys(by).map(k => ({ ph: k, n: by[k].length, avg: mean(by[k]) }));
   return { rows: rows, alerts: out, sat: sat, hormonal: hormonal };
+}
+
+/* Emergency pills since the current cycle started (or in the last 35 days without cycle data), missed/late daily pills in 7 days. */
+function pillReview(logs, C, today) {
+  const from = C.last ? C.last.start : addDays(today, -35);
+  const ec = [], d7 = addDays(today, -6);
+  let miss7 = 0, late7 = 0;
+  Object.keys(logs).sort().forEach(d => {
+    const x = logs[d].pill; if (!x || d > today) return;
+    if (x.t === 'ec' && d >= from) ec.push({ d: d, n: x.n });
+    if (x.t === 'daily' && d >= d7) { if (x.s === 'miss') miss7++; if (x.s === 'late') late7++; }
+  });
+  return { ec: ec, miss7: miss7, late7: late7 };
 }
 
 function phaseOf(C) {
@@ -843,6 +896,20 @@ function analyze(logs, profile, today) {
     may: ['กลุ่มอาการก่อนมีประจำเดือน (PMS)', 'PMS ชนิดรุนแรง (PMDD)', 'ความเครียดหรือพักผ่อนไม่พอ'],
     todo: 'ถ้ารู้สึกเศร้า หมดหวัง หรือกระทบการเรียนการทำงาน คุยกับแพทย์ได้ หรือโทรสายด่วนสุขภาพจิต 1323' });
 
+  /* contraceptive pills logged */
+  const pr = pillReview(logs, C, today);
+  if (pr.ec.length) add({ id: 'ec', level: 1, title: 'กินยาคุมฉุกเฉินรอบนี้ ' + pr.ec.length + ' ครั้ง' + (pr.ec.length >= 2 ? ' (มากกว่า 1 ครั้งในรอบเดียว)' : ''),
+    found: 'ครั้งล่าสุด ' + thDate(pr.ec[pr.ec.length - 1].d) + ' จำนวน ' + pr.ec[pr.ec.length - 1].n + ' เม็ด ยาคุมฉุกเฉินทำให้ประจำเดือนรอบถัดไปมาเร็วหรือช้ากว่ากำหนดได้ราว 1 สัปดาห์ และอาจมีเลือดกะปริดกะปรอย วันที่ Cozy คาดไว้จึงอาจคลาดเคลื่อน',
+    may: ['ผลของฮอร์โมนในยาคุมฉุกเฉิน (พบบ่อย ไม่อันตราย)', 'ตั้งครรภ์ ถ้ายาไม่ได้ผล'].concat(pr.ec.some(x => x.n === 1) ? ['ถ้าเป็นยาชนิดกล่องละ 2 เม็ด ต้องกินให้ครบทั้ง 2 เม็ด กินพร้อมกันหรือห่างกัน 12 ชั่วโมง'] : []),
+    todo: (pr.ec.length >= 2 ? 'ยาคุมฉุกเฉินได้ผลน้อยกว่ายาคุมรายเดือน ลองปรึกษาเภสัชกรหรือแพทย์เรื่องวิธีคุมกำเนิดประจำ ' : '') + 'ถ้าประจำเดือนเลยกำหนดเกิน 7 วัน ให้ตรวจการตั้งครรภ์' });
+  if (pr.miss7 >= 2) add({ id: 'pillmiss', level: 2, title: 'ลืมกินยาคุม ' + pr.miss7 + ' วันใน 7 วันล่าสุด',
+    found: 'ยาคุมอาจป้องกันการตั้งครรภ์ได้ไม่เต็มที่ และอาจมีเลือดออกกะปริดกะปรอยระหว่างรอบ',
+    may: ['ระดับฮอร์โมนจากยาลดลง', 'ตั้งครรภ์ ถ้ามีเพศสัมพันธ์โดยไม่ป้องกันในช่วงนี้'],
+    todo: 'กินเม็ดล่าสุดที่ลืมทันทีที่นึกได้ แล้วกินต่อตามเวลาเดิม ใช้ถุงยางหรืองดเพศสัมพันธ์ 7 วันถัดไป ถ้ามีเพศสัมพันธ์โดยไม่ป้องกันในช่วงที่ลืม ปรึกษาเภสัชกรเรื่องยาคุมฉุกเฉิน วิธีปฏิบัติต่างกันตามชนิดยา อ่านเอกสารในกล่องยาประกอบ' });
+  else if (pr.miss7 === 1 || pr.late7 >= 2) add({ id: 'pillmiss', level: 1, title: pr.miss7 ? 'ลืมกินยาคุม 1 วัน' : 'กินยาคุมช้ากว่าปกติ ' + pr.late7 + ' วัน',
+    found: 'ยาคุมได้ผลดีที่สุดเมื่อกินเวลาเดียวกันทุกวัน',
+    may: ['เลือดออกกะปริดกะปรอยระหว่างรอบ'],
+    todo: 'กินเม็ดที่ลืมทันทีที่นึกได้ แม้ต้องกิน 2 เม็ดในวันเดียว แล้วกินต่อตามเวลาเดิม ถ้าเป็นยาคุมชนิดฮอร์โมนเดี่ยว ช้าเกิน 3 ชั่วโมงก็นับว่าลืม ให้ใช้ถุงยางร่วม 2 วัน ตั้งปลุกเตือนจะช่วยได้' });
   F.sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0) || b.level - a.level);
   return { level: F.reduce((m, f) => Math.max(m, f.level), 0), urgent: F.some(f => f.urgent), findings: F, logged14: w14.length, cycle: C };
 }
@@ -1406,7 +1473,35 @@ function summaryText(logs, profile, today, A) {
     else if (C.until > 0) t = 'ประจำเดือนจะมาอีก <b>' + C.until + '</b> วัน <span class="muted">· ' + thDate(C.next) + '</span>';
     else if (C.until === 0) t = 'คาดว่าประจำเดือนจะมา<b>วันนี้</b>';
     else t = 'ประจำเดือนเลยกำหนดมา <b>' + (-C.until) + '</b> วัน';
-    return '<p class="cal-sub">' + t + '</p>';
+    const ec = pillReview(logs(), C, TODAY).ec.length;
+    return '<p class="cal-sub">' + t + '</p>' + (ec && !C.inPeriod ? '<p class="cal-shift">อาจคลาดเคลื่อนราว 1 สัปดาห์ เพราะกินยาคุมฉุกเฉินในรอบนี้</p>' : '');
+  }
+  let introDone = false, introT = 0;
+  function showIntro() {
+    if (introDone) return;
+    const C = cycleInfo(logs(), prof(), TODAY);
+    if (!C.last) return;
+    introDone = true;
+    let k, n, u = 'วัน', word = false, d = '';
+    if (C.inPeriod) { k = 'ประจำเดือนวันที่'; n = C.cd; u = ''; d = C.until > 0 ? 'รอบถัดไปอีก ' + C.until + ' วัน' : ''; }
+    else if (C.until > 0) { k = 'ประจำเดือนจะมาในอีก'; n = C.until; d = 'คาดว่าเริ่ม ' + fmtWd.format(parse(C.next)); }
+    else if (C.until === 0) { k = 'คาดว่าประจำเดือนจะมา'; n = 'วันนี้'; u = ''; word = true; }
+    else { k = 'ประจำเดือนเลยกำหนดมา'; n = -C.until; }
+    const ec = pillReview(logs(), C, TODAY).ec.length && !C.inPeriod;
+    const el = $('#intro');
+    el.innerHTML = '<span class="intro-k">' + (callName() !== 'น้อง' ? esc(callName()) + ' · ' : '') + k + '</span>'
+      + '<span class="intro-n' + (word ? ' word' : '') + '">' + n + '</span>' + (u ? '<span class="intro-u">' + u + '</span>' : '')
+      + (d ? '<span class="intro-d">' + d + '</span>' : '')
+      + (ec ? '<span class="intro-note">อาจคลาดเคลื่อน เพราะกินยาคุมฉุกเฉินในรอบนี้</span>' : '')
+      + '<button type="button" class="btn outline" data-act="intro-close">ดูปฏิทิน</button>';
+    el.classList.remove('out'); el.hidden = false;
+    clearTimeout(introT); introT = setTimeout(hideIntro, 2600);
+  }
+  function hideIntro() {
+    const el = $('#intro'); if (el.hidden) return;
+    clearTimeout(introT);
+    el.classList.add('out');
+    setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, 460);
   }
   function calHTML(C, L) {
     const ym = calMonth.split('-').map(Number), y = ym[0], m = ym[1];
@@ -1464,10 +1559,19 @@ function summaryText(logs, profile, today, A) {
       + '<div class="field" id="amtField"' + (d.dis === 'normal' ? ' hidden' : '') + '><span class="label">ปริมาณตกขาว</span><div class="chips">' + chips(AMT, 'amt', d.amt) + '</div></div>'
       + '<div class="field"><span class="label">อาการทั่วไป</span><div class="chips">' + syms(SYM_GEN) + '</div></div>'
       + '<div class="field"><span class="label">อาการที่ควรจับตา</span><div class="chips">' + syms(SYM_RED) + '</div></div>'
+      + pillFormHTML()
       + sxFormHTML()
       + '<div class="field"><label class="label" for="noteInput">โน้ตเพิ่มเติม</label><textarea class="input" id="noteInput" rows="2" maxlength="300" placeholder="เช่น กินยาแก้ปวด 1 เม็ด นอนดึก">' + esc(d.note) + '</textarea></div>'
       + '</div>'
       + '<div class="inline wide"><button type="button" class="btn primary" data-act="save-log">บันทึก</button>' + (exists ? '<button type="button" class="btn danger" data-act="del-log">ลบบันทึกนี้</button>' : '') + '</div>';
+  }
+  function pillFormHTML() {
+    const x = draft.pill || { t: 'none' };
+    const chip = (act, k, v, label, on) => '<button type="button" class="chip" data-act="' + act + '" data-k="' + k + '" data-v="' + v + '" aria-pressed="' + on + '">' + label + '</button>';
+    let h = '<div class="field" id="pillField"><span class="label">ยาคุมกำเนิดวันนี้</span><div class="chips">' + PILL_T.map(a => chip('pill-set', 't', a[0], a[1], x.t === a[0])).join('') + '</div>';
+    if (x.t === 'daily') h += '<div class="chips">' + PILL_S.map(a => chip('pill-set', 's', a[0], a[1], x.s === a[0])).join('') + '</div>';
+    if (x.t === 'ec') h += '<span class="small muted">กินกี่เม็ด</span><div class="chips">' + chip('pill-set', 'n', 1, '1 เม็ด', x.n === 1) + chip('pill-set', 'n', 2, '2 เม็ด', x.n === 2) + '</div><span class="small muted">Cozy จะเตือนว่าประจำเดือนรอบถัดไปอาจคลาดเคลื่อน</span>';
+    return h + '</div>';
   }
   function sxFormHTML() {
     const x = draft.sx || {}, on = !!draft.sx;
@@ -1597,9 +1701,49 @@ function summaryText(logs, profile, today, A) {
   function paintChat() {
     $('#msgs').innerHTML = '';
     addMsg('cozy', greetMsg(), true);
-    chatLog.forEach(m => { if (m.r === 'l') addLock(true); else addMsg(m.r === 'u' ? 'me' : 'cozy', m.t, true); });
+    chatLog.forEach(m => { if (m.r === 'l') addLock(true); else if (m.r === 'p') addPhoto(m.t, true); else if (m.r === 'q') addPhotoReply(true); else addMsg(m.r === 'u' ? 'me' : 'cozy', m.t, true); });
     $('#topics').innerHTML = TOPICS.map(t => '<button type="button" class="chip" data-act="topic">' + t[0] + '</button>').join('') + '<button type="button" class="chip" data-act="topic">ผลวิเคราะห์ของฉัน</button>';
     renderChat();
+  }
+  const PHOTO_CHOICES = [
+    ['สิวหัวขาว', 'สิวหัวขาวเป็นสิวอุดตันแบบปิด เห็นเป็นตุ่มเล็กสีขาว ไม่แดง ไม่เจ็บ\n\nล้างหน้าวันละ 2 ครั้งด้วยสบู่อ่อน เลือกเครื่องสำอางที่ไม่อุดตัน ยาทาที่มีกรดซาลิไซลิกหรือเบนโซอิลเปอร์ออกไซด์ช่วยได้ ปรึกษาเภสัชกรก่อนใช้'],
+    ['สิวหัวดำ', 'สิวหัวดำเป็นสิวอุดตันแบบเปิด หัวที่ดำเกิดจากไขมันสัมผัสอากาศ ไม่ใช่สิ่งสกปรก\n\nไม่ควรบีบหรือแกะ ดูแลเหมือนสิวหัวขาว ถ้าเป็นเยอะและไม่ดีขึ้นใน 2-3 เดือน ปรึกษาแพทย์ผิวหนัง'],
+    ['ตุ่มแดงอักเสบ', 'ตุ่มแดง เจ็บ ไม่มีหัว คือสิวอักเสบ มักขึ้นแถวคางและกรามช่วงก่อนมีประจำเดือนเพราะฮอร์โมน\n\nอย่าบีบ เพราะทำให้อักเสบลึกและเป็นรอย ถ้าขึ้นเยอะทุกรอบเดือน ร่วมกับประจำเดือนมาห่างหรือขนดก ลองให้แพทย์ตรวจฮอร์โมน'],
+    ['สิวหัวหนอง', 'ตุ่มแดงที่มีหัวหนองสีเหลืองขาวตรงกลางคือสิวอักเสบชนิดหนึ่ง\n\nไม่ควรบีบเอง เสี่ยงติดเชื้อและเป็นแผลเป็น ถ้าขึ้นหลายจุดหรือเป็นซ้ำบ่อย ปรึกษาแพทย์ผิวหนังเรื่องยาทาหรือยากิน'],
+    ['ก้อนใหญ่ใต้ผิว', 'ก้อนนูนใหญ่ แข็ง เจ็บลึก คือสิวไตหรือซีสต์ เป็นสิวชนิดรุนแรง ทิ้งแผลเป็นได้ง่าย\n\nควรพบแพทย์ผิวหนัง เพราะยาทาทั่วไปมักไม่พอ ห้ามบีบหรือเจาะเอง'],
+    ['ผื่นหรือตุ่มที่จุดซ่อนเร้น', 'ผื่น ตุ่ม แผล หรือหูดบริเวณจุดซ่อนเร้น มีได้หลายสาเหตุ ตั้งแต่รูขุมขนอักเสบไปจนถึงโรคติดต่อทางเพศสัมพันธ์ ซึ่งดูจากรูปอย่างเดียวแยกไม่ได้\n\nควรให้แพทย์ตรวจ และงดเพศสัมพันธ์หรือใช้ถุงยางจนกว่าจะรู้ผล ปรึกษาฟรีได้ที่สายด่วน 1663']
+  ];
+  function addPhoto(url, quiet) {
+    const el = document.createElement('div'); el.className = 'msg me pic';
+    const img = document.createElement('img'); img.src = url; img.alt = 'รูปที่แนบ'; el.appendChild(img);
+    $('#msgs').appendChild(el); if (!quiet) el.scrollIntoView({ block: 'nearest' });
+  }
+  function addPhotoReply(quiet) {
+    const el = document.createElement('div'); el.className = 'msg lock';
+    el.innerHTML = '<span><strong>วิเคราะห์รูปด้วย AI อยู่ใน Cozy Plus ขึ้นไป</strong><br>ตอนนี้บอกพี่ได้ว่าในรูปเป็นแบบไหน พี่จะอธิบายให้ฟรี รูปนี้อยู่ในเครื่องนี้เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์</span>'
+      + '<div class="chips">' + PHOTO_CHOICES.map((c, i) => '<button type="button" class="chip" data-act="photo-pick" data-i="' + i + '">' + c[0] + '</button>').join('') + '</div>'
+      + '<button type="button" class="btn sm outline" data-act="plus-open">ดูแพ็กเกจสมาชิก</button>';
+    $('#msgs').appendChild(el); if (!quiet) el.scrollIntoView({ block: 'nearest' });
+  }
+  function sendPhoto(file) {
+    if (!file || !/^image\//.test(file.type)) { toast('เลือกไฟล์รูปภาพเท่านั้น'); return; }
+    const r = new FileReader();
+    r.onload = function () {
+      const img = new Image();
+      img.onload = function () {
+        const k = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const url = c.toDataURL('image/jpeg', 0.8);
+        addPhoto(url); chatLog.push({ r: 'p', t: url });
+        addPhotoReply(); chatLog.push({ r: 'q', t: '' });
+        if (chatLog.length > 60) chatLog = chatLog.slice(-60);
+        renderChat();
+      };
+      img.onerror = function () { toast('เปิดรูปนี้ไม่ได้ ลองรูปอื่น'); };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
   }
   function sendChat(text) {
     text = String(text || '').trim().slice(0, 300);
@@ -1613,15 +1757,41 @@ function summaryText(logs, profile, today, A) {
   }
   function openSheet(id) { const el = $('#' + id); el.hidden = false; const b = el.querySelector('[data-close]'); if (b) b.focus(); }
   function closeSheets() { document.querySelectorAll('.sheet').forEach(x => { x.hidden = true; }); }
+  /* prices and rewards are display values; edit them in config.js with window.COZY_PRICES / window.COZY_REWARDS */
+  const PRICES = Object.assign({ plus: 59, premium: 149, family: 399, familySeats: 5 }, window.COZY_PRICES || {});
+  const REWARDS = window.COZY_REWARDS || [['ผ้าอนามัย 1 ชิ้นจากตู้แลก Cozy', 5], ['ชุดตรวจการตั้งครรภ์', 20], ['ส่วนลดปรึกษาแพทย์ 100 บาท', 40]];
+  const baht = n => Number(n).toLocaleString('th-TH') + ' บาท / เดือน';
+  const TIERS = [
+    { id: 'free', name: 'ฟรี', price: 'ฟรีตลอด', items: ['ปฏิทินและนับวันประจำเดือน', 'บันทึกอาการ ผลวิเคราะห์ และตัวช่วยเมนไม่มา', 'กราฟฮอร์โมนและบันทึกสุขอนามัยทางเพศ', 'พี่โคซี่ตอบหัวข้อฟรี และจับคู่กับคนใกล้ชิด'] },
+    { id: 'plus', name: 'Cozy Plus', price: baht(PRICES.plus), items: ['ทุกอย่างในแพ็กเกจฟรี', 'ถามพี่โคซี่ได้ทุกเรื่อง', 'ส่งรูปให้ AI ช่วยดู เช่น สิว ผื่น', 'คำตอบเจาะจงจากบันทึกของคุณ'] },
+    { id: 'premium', name: 'Cozy Premium', price: baht(PRICES.premium), best: true, items: ['ทุกอย่างใน Plus', 'โทรปรึกษาแพทย์', 'สะสมโทเคนทุกเดือน แลกของได้ เช่น ผ้าอนามัยจากตู้แลก'] },
+    { id: 'family', name: 'Family Premium', price: baht(PRICES.family), items: ['ทุกอย่างใน Premium', 'ใช้ได้สูงสุด ' + PRICES.familySeats + ' คน แต่ละคนมีบัญชีและข้อมูลแยกกัน', 'ชวนเพื่อนหรือครอบครัวเข้ากลุ่มด้วยอีเมล'] }
+  ];
+  const curTier = () => S.profile.tier || 'free';
+  function tiersHTML() {
+    const solo = PRICES.premium * PRICES.familySeats, save = solo - PRICES.family;
+    return '<div class="tiers">' + TIERS.map(t => {
+      const cur = t.id === curTier(), want = S.profile.interest === t.id;
+      return '<div class="tier' + (cur ? ' cur' : t.best ? ' best' : '') + '"><div class="tier-h"><strong>' + t.name + '</strong><span class="tier-p">' + t.price + '</span></div>'
+        + (t.id === 'family' && save > 0 ? '<span class="save">ถูกกว่า Premium ' + PRICES.familySeats + ' คน (' + solo.toLocaleString('th-TH') + ' บาท) ประหยัด ' + save.toLocaleString('th-TH') + ' บาท / เดือน</span>' : '')
+        + '<ul>' + t.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>'
+        + (t.id === 'premium' ? '<div class="rewards"><span class="small muted">ตัวอย่างของที่แลกได้</span>' + REWARDS.map(r => '<div class="reward"><span>' + esc(r[0]) + '</span><b>' + r[1] + ' โทเคน</b></div>').join('') + '</div>' : '')
+        + (cur ? '<span class="pill">แพ็กเกจปัจจุบัน</span>' : t.id === 'free' ? '' : '<button type="button" class="btn ' + (want ? '' : 'primary ') + 'block" data-act="tier-join" data-tier="' + t.id + '">' + (want ? 'บันทึกแล้วว่าสนใจ' : 'สมัคร ' + t.name) + '</button>')
+        + '</div>';
+    }).join('') + '</div><p class="small muted" id="tierNote">ยังไม่เปิดรับสมัคร และยังไม่มีการเก็บเงินใดๆ กดสมัครเพื่อบอกว่าคุณสนใจได้</p>';
+  }
   function openPlus() {
-    $('#plusPrice').textContent = PLUS.price;
-    $('#plusAct').innerHTML = '<button type="button" class="btn primary block" data-act="plus-join">สมัคร Cozy Plus</button>';
+    $('#plusPrice').textContent = '';
+    $('#plusAct').innerHTML = tiersHTML();
     openSheet('plus');
   }
-  function plusJoin() {
-    const inn = cloud.state === 'in';
-    $('#plusAct').innerHTML = '<p><strong>Cozy Plus ยังไม่เปิดรับสมัคร</strong> ตอนนี้ยังไม่มีการเก็บเงินใดๆ</p>'
-      + (inn ? (S.profile.plusNotify ? '<p class="muted">บันทึกไว้แล้วว่าคุณสนใจ Cozy Plus</p>' : '<button type="button" class="btn primary block" data-act="plus-notify">บอกว่าฉันสนใจ</button>') : '');
+  function plusJoin() { openPlus(); }
+  function tierJoin(id) {
+    if (cloud.state !== 'in') { toast('สมัครหรือเข้าสู่ระบบก่อน แล้วค่อยเลือกแพ็กเกจ'); return; }
+    S.profile.interest = id; S.profile.plusNotify = true; push('profile');
+    if (!$('#plus').hidden) $('#plusAct').innerHTML = tiersHTML();
+    if (!$('#acctSheet').hidden) renderAcctSheet();
+    toast('บันทึกแล้วว่าคุณสนใจ ' + (TIERS.find(t => t.id === id) || {}).name + ' จะแจ้งเมื่อเปิดรับสมัคร');
   }
   function openPrivacy() {
     $('#policyText').textContent = window.COZY_PRIVACY || [
@@ -1629,7 +1799,7 @@ function summaryText(logs, profile, today, A) {
       'เก็บเพื่ออะไร: เพื่อแสดงปฏิทิน ผลคัดกรอง และสถานะที่คุณเลือกแชร์ให้คนที่มีรหัสจับคู่ของคุณ',
       'เก็บที่ไหน: บนบริการ Firebase ของ Google และสำเนาในเบราว์เซอร์ของเครื่องที่คุณเข้าสู่ระบบ',
       'ใครเห็นได้: คุณ และผู้ดูแลระบบของแอพซึ่งเข้าถึงฐานข้อมูลได้เพื่อดูแลระบบ คนที่มีรหัสจับคู่ของคุณเห็นเฉพาะสถานะที่คุณเปิดแชร์',
-      'การลบ: ลบข้อมูลหรือลบบัญชีได้ทุกเมื่อที่แท็บ ของฉัน',
+      'การลบ: ลบข้อมูลหรือลบบัญชีได้ทุกเมื่อ ที่รูปโปรไฟล์มุมขวาบน > ข้อมูลส่วนตัว',
       'ติดต่อผู้ดูแลแอพ: ' + (window.COZY_CONTACT || '[ยังไม่ได้ระบุ ให้เจ้าของแอพใส่อีเมลใน config.js]')
     ].join('\n\n');
     openSheet('privacy');
@@ -1664,6 +1834,7 @@ function summaryText(logs, profile, today, A) {
         + '<div class="field"><label class="label" for="acctNickInput">ชื่อที่พี่โคซี่เรียก</label>'
         + '<div class="inline"><input class="input" id="acctNickInput" style="flex:1" value="' + esc(S.profile.nickname || (demoMode ? (localStorage.getItem('cozy:demo_nick') || '') : '')) + '" placeholder="ใส่ชื่อเล่นของคุณ" maxlength="30"><button type="button" class="btn sm primary" data-act="save-acct-nick">บันทึก</button></div></div>'
         + '<div class="menu-list">'
+        + '<button type="button" class="menu-item" data-act="goto-me"><span class="menu-item-l"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5"/></svg><span class="menu-item-t"><strong>ข้อมูลส่วนตัว</strong><span>ข้อมูลร่างกาย รอบเดือน ยาคุม โรงพยาบาล และการลบข้อมูล</span></span></span><span aria-hidden="true">›</span></button>'
         + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="email"><span class="menu-item-l"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span class="menu-item-t"><strong>ดูอีเมลที่ล็อกอิน</strong><span>' + esc(email) + '</span></span></span><span class="menu-chev">›</span></button>'
         + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="devices"><span class="menu-item-l"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><circle cx="12" cy="17" r="1"/></svg><span class="menu-item-t"><strong>อุปกรณ์ที่เข้าสู่ระบบ</strong><span>' + (inn ? (S.profile.devices.length || 1) + ' อุปกรณ์' : 'ต้องเข้าสู่ระบบก่อน') + '</span></span></span><span class="menu-chev">›</span></button>'
         + '<button type="button" class="menu-item" data-act="acct-sub" data-sub="security"><span class="menu-item-l"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V7l-8-4z"/></svg><span class="menu-item-t"><strong>รหัสผ่านและความปลอดภัย</strong><span>เปลี่ยนรหัสผ่าน · รีเซ็ตรหัสผ่าน</span></span></span><span class="menu-chev">›</span></button>'
@@ -1708,15 +1879,12 @@ function summaryText(logs, profile, today, A) {
         + '</div>')
         + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
     } else if (acctView === 'membership') {
-      box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>โปรแกรมสมาชิก</h2></div>'
-        + '<div class="card stack">'
-        + '<div class="inline" style="justify-content:space-between"><h3>สถานะปัจจุบัน</h3><span class="pill">' + (S.profile.plusActive ? 'Cozy Plus' : 'แพ็กเกจฟรี') + '</span></div>'
-        + '<p class="muted">ใช้งานปฏิทินนับวัน บันทึกอาการ ผลวิเคราะห์คัดกรอง ตัวช่วยเมนไม่มา และการจับคู่กับคนใกล้ชิดได้ฟรีตลอดชีพ</p>'
-        + '<div style="background:var(--surface-2);border-radius:14px;padding:14px" class="stack">'
-        + '<div class="inline" style="justify-content:space-between"><strong>Cozy Plus</strong><span class="price" style="font-size:1.2rem">' + esc(PLUS.price) + '</span></div>'
-        + '<ul class="plus-list small"><li>ถามพี่โคซี่ได้ทุกเรื่อง ไม่จำกัดหัวข้อ</li><li>คำตอบเจาะจงจากบันทึกสุขภาพของคุณ</li><li>คุยต่อเนื่อง จำเรื่องที่เคยเล่าไว้</li></ul>'
-        + '<button type="button" class="btn primary block" data-act="plus-open">ดูรายละเอียด Cozy Plus</button>'
-        + '</div></div>'
+      const T = TIERS.find(t => t.id === curTier());
+      box.innerHTML = '<div class="back-row"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>โปรแกรมสมาชิก</h2></div>'
+        + '<div class="card stack"><div class="inline" style="justify-content:space-between"><h3>สถานะปัจจุบัน</h3><span class="pill">' + T.name + '</span></div>'
+        + '<div class="inline" style="justify-content:space-between"><span class="muted">โทเคนสะสม</span><strong>' + (num(S.profile.tokens) || 0) + ' โทเคน</strong></div>'
+        + '<p class="small muted">สมาชิก Premium และ Family Premium สะสมโทเคนเพื่อแลกของได้</p></div>'
+        + tiersHTML()
         + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
     }
   }
@@ -1907,6 +2075,7 @@ function summaryText(logs, profile, today, A) {
   function renderMe() {
     const p = S.profile, C = cycleInfo(S.started ? S.logs : {}, p, TODAY), inn = cloud.state === 'in';
     meCond = p.cond.slice();
+    const head = '<div class="back-row"><button type="button" class="btn sm" data-act="me-back">‹ กลับ</button><h2>ข้อมูลส่วนตัว</h2></div>';
     const row = (id, label, v, unit, attrs) => '<div class="row"><label for="' + id + '">' + label + '</label><span class="row-in"><input class="input num" id="' + id + '" type="number" inputmode="decimal" value="' + esc(v) + '" ' + attrs + '><span class="unit">' + unit + '</span></span></div>';
     let h = inn
       ? '<section class="card stack"><h2>บัญชี &amp; ชื่อเล่น</h2><p class="acct">' + esc(cloud.user.email || '') + '</p>'
@@ -1936,7 +2105,7 @@ function summaryText(logs, profile, today, A) {
     h += '<section class="card stack"><h2>ข้อมูลของฉัน</h2><p class="muted" id="syncNote"></p>'
       + (inn ? '<div id="wipeBox" class="stack"><div class="inline"><button type="button" class="btn danger" data-act="wipe">ลบข้อมูลทั้งหมด</button><button type="button" class="btn danger" data-act="del-account">ลบบัญชี</button></div></div>' : '')
       + '<button type="button" class="linkbtn" data-act="privacy">นโยบายความเป็นส่วนตัว</button></section>';
-    $('#v-me').innerHTML = h;
+    $('#v-me').innerHTML = head + h;
     syncNote();
     if (scrollTarget) { const t = $('#' + scrollTarget); scrollTarget = null; if (t) t.scrollIntoView({ block: 'start' }); }
   }
@@ -2023,6 +2192,7 @@ function summaryText(logs, profile, today, A) {
     if ($('#app').hidden) return;
     ROUTES.forEach(r => { $('#v-' + r).hidden = r !== route; });
     document.querySelectorAll('.tab').forEach(a => { if (a.dataset.tab === route) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (route === 'home') showIntro();
     $('#demoBar').hidden = S.started || route === 'chat';
     if (route === 'home') renderHome(); else if (route === 'log') renderLog(); else if (route === 'chat') renderChat(); else if (route === 'pair') renderPair(); else renderMe();
     syncNote();
@@ -2140,6 +2310,17 @@ function summaryText(logs, profile, today, A) {
     else if (act === 'chat-clear') { chatLog = []; paintChat(); }
     else if (act === 'plus-open') { closeSheets(); openPlus(); }
     else if (act === 'plus-join') plusJoin();
+    else if (act === 'tier-join') tierJoin(t.dataset.tier);
+    else if (act === 'intro-close') hideIntro();
+    else if (act === 'goto-me') { closeSheets(); location.hash = '#me'; }
+    else if (act === 'me-back') { if (history.length > 1) history.back(); else location.hash = '#home'; }
+    else if (act === 'photo-pick') { const c = PHOTO_CHOICES[Number(t.dataset.i)]; if (c) { addMsg('me', c[0]); chatLog.push({ r: 'u', t: c[0] }); addMsg('cozy', c[1]); chatLog.push({ r: 'c', t: c[1] }); renderChat(); } }
+    else if (act === 'pill-set') {
+      const k = t.dataset.k, v = t.dataset.v;
+      if (k === 't') draft.pill = v === 'none' ? null : normPill({ t: v, s: 'ok', n: 1 });
+      else if (draft.pill) draft.pill[k] = k === 'n' ? Number(v) : v;
+      $('#pillField').outerHTML = pillFormHTML();
+    }
     else if (act === 'plus-notify') { S.profile.plusNotify = true; push('profile'); plusJoin(); }
     else if (act === 'setup-save') {
       if (!needLogin()) return;
@@ -2187,6 +2368,8 @@ function summaryText(logs, profile, today, A) {
       const sh = S.profile.share;
       sh.nick = val('shNick'); sh.details = $('#shDetails').checked; sh.next = $('#shNext').checked; sh.mood = $('#shMood').checked;
       push('profile'); syncShare();
+    } else if (id === 'chatPhoto' && ev.target.files && ev.target.files[0]) {
+      sendPhoto(ev.target.files[0]); ev.target.value = '';
     } else if (id === 'avatarFile' && ev.target.files && ev.target.files[0]) {
       handleAvatarUpload(ev.target.files[0]);
       ev.target.value = '';
