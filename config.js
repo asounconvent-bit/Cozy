@@ -1,7 +1,6 @@
 // ค่าตั้งของ Cozy — แก้ไฟล์นี้ไฟล์เดียว ไม่ต้องแตะ index.html
 
 // 1) ค่าเชื่อมต่อ Firebase ของโปรเจกต์ cozy-women
-//    ค่าเหล่านี้ไม่ใช่ความลับ ความปลอดภัยของข้อมูลมาจากกฎในไฟล์ firestore.rules
 window.COZY_FIREBASE = {
   apiKey: "AIzaSyBD4SI9hXcBq-6TnaokljJbDsSR3ayVWhg",
   authDomain: "cozy-women.firebaseapp.com",
@@ -12,8 +11,15 @@ window.COZY_FIREBASE = {
   measurementId: "G-YXQ3RH9RR5"
 };
 
-// 2) ข้อความราคา Cozy Plus ที่แสดงในแอพ (ตอนนี้ยังไม่มีระบบเก็บเงินจริง)
-window.COZY_PLUS = { price: "59 บาท / เดือน" };
+// 2) ราคาแพ็กเกจ (บาท/เดือน) และจำนวนคนใน Family
+window.COZY_PRICES = { plus: 59, premium: 149, family: 399, familySeats: 5 };
 
-// 3) อีเมลผู้ดูแลแอพ แสดงในนโยบายความเป็นส่วนตัว
+// 3) ของแลกด้วยโทเคน: ["ชื่อของ", จำนวนโทเคน]
+window.COZY_REWARDS = [
+  ["ผ้าอนามัย 1 ชิ้นจากตู้แลก Cozy", 5],
+  ["ชุดตรวจการตั้งครรภ์", 20],
+  ["ส่วนลดปรึกษาแพทย์ 100 บาท", 40]
+];
+
+// 4) อีเมลผู้ดูแลแอพ แสดงในนโยบายความเป็นส่วนตัว
 window.COZY_CONTACT = "";
