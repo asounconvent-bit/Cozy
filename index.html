@@ -356,12 +356,39 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 .back-row{display:flex;align-items:center;gap:10px}
 @media (prefers-reduced-motion: reduce){ .intro{transition:none} }
 @media (prefers-reduced-motion: reduce){ .switch::after{transition:none} }
+/* พี่โคซี่ mascot */
+.mascot,[data-mascot]{display:inline-block;flex:none;line-height:0}
+.cozy-svg{width:100%;height:auto;display:block}
+.brand-row{display:flex;align-items:center;gap:8px}
+.brand-mascot{width:28px}
+.gate-mascot{width:96px;margin-bottom:8px}
+.intro-mascot{width:108px;margin-bottom:4px;animation:czBob 2.4s ease-in-out infinite}
+@keyframes czBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hello{display:flex;align-items:flex-end;gap:10px}
+.hello .mascot{width:54px}
+.hello .bubble{background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 16px 6px;padding:.55rem .9rem;font-size:.9375rem;min-width:0;line-height:1.55}
+.status-row{display:flex;gap:14px;align-items:center}
+.status-row .mascot{width:70px}
+.status-row>div{min-width:0;display:flex;flex-direction:column;gap:6px}
+.strip .mascot{width:26px}
+.cozy-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:12px 14px}
+.cozy-card .cc-m{width:52px}
+.cozy-card .cc-t{flex:1;min-width:0}
+.cozy-card .nm{color:var(--accent);line-height:1.3}
+.cozy-card .st{font-size:.875rem;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.cozy-card .st::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--ok);flex:none}
+.msg-row{display:flex;align-items:flex-end;gap:8px;max-width:94%;align-self:flex-start}
+.msg-row .mascot{width:32px;margin-bottom:2px}
+.msg-row .msg{max-width:none;min-width:0}
+.empty-cozy{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.empty-cozy .mascot{width:76px}
+@media (prefers-reduced-motion: reduce){ .intro-mascot{animation:none} }
 </style>
 </head>
 <body>
 <div class="app" id="app" hidden>
   <header class="top">
-    <span class="brand">Cozy</span>
+    <span class="brand-row"><span class="brand-mascot" data-mascot="smile" data-steam="no"></span><span class="brand">Cozy</span></span>
     <div class="top-r">
       <span class="today" id="todayLabel"></span>
       <button type="button" class="avatar-btn" id="topAvatar" data-act="acct-open" aria-label="ตั้งค่าบัญชีและโปรไฟล์"></button>
@@ -373,7 +400,7 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
     <section id="v-home" class="stack" hidden></section>
     <section id="v-log" class="stack" hidden></section>
     <section id="v-chat" class="stack" hidden>
-      <div class="chat-head"><h2>คุยกับพี่โคซี่</h2><button type="button" class="btn sm" id="chatClear" data-act="chat-clear" hidden>ล้างแชต</button></div>
+      <div class="cozy-card"><span class="cc-m" data-mascot="happy"></span><div class="cc-t"><h2 class="nm">พี่โคซี่</h2><div class="st">ออนไลน์ · พร้อมคุย</div></div><button type="button" class="btn sm" id="chatClear" data-act="chat-clear" hidden>ล้างแชต</button></div>
       <div class="msgs" id="msgs" aria-live="polite"></div>
       <div class="field"><span class="label">หัวข้อที่ถามได้ฟรี</span><div class="chips" id="topics"></div></div>
       <button type="button" class="btn block" data-act="plus-open">ถามเรื่องอื่นได้ทุกเรื่อง<span class="tag">Plus</span></button>
@@ -392,7 +419,7 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 </div>
 
 <div class="gate stack" id="gate">
-  <div><div class="brand big">Cozy</div><p class="muted">นับวันประจำเดือน บันทึกอาการ และรู้ว่าเมื่อไรควรไปหาหมอ</p></div>
+  <div><span class="gate-mascot" data-mascot="happy"></span><div class="brand big">Cozy</div><p class="muted">นับวันประจำเดือน บันทึกอาการ และรู้ว่าเมื่อไรควรไปหาหมอ</p></div>
   <p class="card" id="gateMsg">กำลังตรวจสอบการเข้าสู่ระบบ…</p>
   <form class="card stack" id="authForm" hidden novalidate>
     <div class="seg two" role="tablist"><button type="button" role="tab" data-act="auth-mode" data-mode="in" aria-selected="true">เข้าสู่ระบบ</button><button type="button" role="tab" data-act="auth-mode" data-mode="up" aria-selected="false">สมัครสมาชิก</button></div>
@@ -1476,6 +1503,41 @@ function summaryText(logs, profile, today, A) {
     const ec = pillReview(logs(), C, TODAY).ec.length;
     return '<p class="cal-sub">' + t + '</p>' + (ec && !C.inPeriod ? '<p class="cal-shift">อาจคลาดเคลื่อนราว 1 สัปดาห์ เพราะกินยาคุมฉุกเฉินในรอบนี้</p>' : '');
   }
+  /* ---------- พี่โคซี่ มาสคอต ---------- */
+  let mascotN = 0;
+  function cozySVG(mood, opt) {
+    opt = opt || {};
+    const id = 'cz' + (++mascotN), INK = '#3A1430', BODY = '#F9B3CB', EDGE = '#E886AC', RED = '#E0195F';
+    const body = 'M170 90V66h60v24c70 5 130 30 130 110v200q0 70-70 70H110q-70 0-70-70V200c0-80 60-105 130-110z';
+    const eye = (x, r) => '<circle cx="' + x + '" cy="215" r="' + r + '" fill="' + INK + '"/><circle cx="' + (x - 6) + '" cy="208" r="' + (r * .36) + '" fill="#fff"/>';
+    const arc = (x, up) => '<path d="M' + (x - 18) + ' ' + (up ? 222 : 212) + 'q18 ' + (up ? -24 : 16) + ' 36 0" fill="none" stroke="' + INK + '" stroke-width="8" stroke-linecap="round"/>';
+    let face = '', extra = '';
+    if (mood === 'happy') face = arc(150, 1) + arc(250, 1) + '<path d="M180 240q20 36 40 0z" fill="' + RED + '" stroke="' + INK + '" stroke-width="6" stroke-linejoin="round"/>';
+    else if (mood === 'worry' || mood === 'alert') {
+      face = eye(150, 14) + eye(250, 14) + '<path d="M128 198l38-12M272 198l-38-12" stroke="' + INK + '" stroke-width="6" stroke-linecap="round"/>'
+        + (mood === 'alert' ? '<path d="M180 258q10-12 20 0t20 0" fill="none" stroke="' + INK + '" stroke-width="6" stroke-linecap="round"/>' : '<ellipse cx="200" cy="254" rx="11" ry="9" fill="' + INK + '"/>')
+        + '<path d="M318 150q12 22 0 30q-12-8 0-30z" fill="#9FD6F5"/>' + (mood === 'alert' ? '<path d="M84 160q10 18 0 24q-10-6 0-24z" fill="#9FD6F5"/>' : '');
+    } else if (mood === 'sleep') {
+      face = arc(150, 0) + arc(250, 0) + '<path d="M190 250q10 8 20 0" fill="none" stroke="' + INK + '" stroke-width="6" stroke-linecap="round"/>';
+      extra = '<text x="300" y="120" font-family="sans-serif" font-weight="700" font-size="56" fill="' + EDGE + '">z</text><text x="335" y="80" font-family="sans-serif" font-weight="700" font-size="40" fill="' + EDGE + '">z</text>';
+    } else face = eye(150, 17) + eye(250, 17) + '<path d="M183 246q17 20 34 0" fill="none" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/>';
+    const steam = opt.steam === false ? '' : '<path d="M178 6q-14-16 0-32t0-32M222-4q-14-16 0-32t0-32" fill="none" stroke="#F4B9CF" stroke-width="7" stroke-linecap="round"/>';
+    return '<svg class="cozy-svg" viewBox="20 ' + (opt.steam === false ? '10' : '-70') + ' 360 ' + (opt.steam === false ? '485' : '565') + '" aria-hidden="true" focusable="false">'
+      + '<defs><clipPath id="' + id + 'c"><path d="' + body + '"/></clipPath><pattern id="' + id + 'p" width="26" height="22" patternUnits="userSpaceOnUse" x="46" y="330"><path d="M1 4l12 12 12-12" fill="none" stroke="' + EDGE + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></pattern></defs>'
+      + steam + '<ellipse cx="150" cy="474" rx="34" ry="15" fill="' + EDGE + '"/><ellipse cx="250" cy="474" rx="34" ry="15" fill="' + EDGE + '"/>'
+      + '<path d="' + body + '" fill="' + BODY + '"/><g clip-path="url(#' + id + 'c)"><rect y="312" width="400" height="200" fill="#FFD9E6"/><rect y="326" width="400" height="160" fill="url(#' + id + 'p)"/></g>'
+      + '<path d="' + body + '" fill="none" stroke="' + EDGE + '" stroke-width="7" stroke-linejoin="round"/>'
+      + '<rect x="158" y="22" width="84" height="50" rx="14" fill="' + RED + '"/><rect x="170" y="32" width="22" height="8" rx="4" fill="#fff" opacity=".5"/>'
+      + face + '<ellipse cx="112" cy="252" rx="24" ry="13" fill="#FF6F9E" opacity=".45"/><ellipse cx="288" cy="252" rx="24" ry="13" fill="#FF6F9E" opacity=".45"/>'
+      + '<ellipse cx="146" cy="330" rx="28" ry="20" fill="' + BODY + '" stroke="' + EDGE + '" stroke-width="6"/><ellipse cx="254" cy="330" rx="28" ry="20" fill="' + BODY + '" stroke="' + EDGE + '" stroke-width="6"/>'
+      + '<path d="M200 372c-40-30-40-72-14-72 10 0 14 10 14 16 0-6 4-16 14-16 26 0 26 42-14 72z" fill="' + RED + '" stroke="#A3134A" stroke-width="5" stroke-linejoin="round"/>'
+      + extra + '</svg>';
+  }
+  const mascot = (mood, cls, opt) => '<span class="mascot ' + (cls || '') + '" data-mood="' + mood + '">' + cozySVG(mood, opt) + '</span>';
+  const levelMood = (lv, urgent) => urgent || lv >= 2 ? 'alert' : lv === 1 ? 'worry' : 'happy';
+  function fillMascots() {
+    document.querySelectorAll('[data-mascot]').forEach(el => { el.innerHTML = cozySVG(el.dataset.mascot, { steam: el.dataset.steam !== 'no' }); });
+  }
   let introDone = false, introT = 0;
   function showIntro() {
     if (introDone) return;
@@ -1489,7 +1551,8 @@ function summaryText(logs, profile, today, A) {
     else { k = 'ประจำเดือนเลยกำหนดมา'; n = -C.until; }
     const ec = pillReview(logs(), C, TODAY).ec.length && !C.inPeriod;
     const el = $('#intro');
-    el.innerHTML = '<span class="intro-k">' + (callName() !== 'น้อง' ? esc(callName()) + ' · ' : '') + k + '</span>'
+    const im = C.inPeriod ? 'sleep' : C.until < 0 ? 'worry' : 'happy';
+    el.innerHTML = mascot(im, 'intro-mascot') + '<span class="intro-k">' + (callName() !== 'น้อง' ? esc(callName()) + ' · ' : '') + k + '</span>'
       + '<span class="intro-n' + (word ? ' word' : '') + '">' + n + '</span>' + (u ? '<span class="intro-u">' + u + '</span>' : '')
       + (d ? '<span class="intro-d">' + d + '</span>' : '')
       + (ec ? '<span class="intro-note">อาจคลาดเคลื่อน เพราะกินยาคุมฉุกเฉินในรอบนี้</span>' : '')
@@ -1527,12 +1590,18 @@ function summaryText(logs, profile, today, A) {
   }
   function renderHome() {
     const L = logs(), A = analyze(L, prof(), TODAY), C = A.cycle;
-    const greeting = callName() !== 'น้อง' ? '<p class="muted small">สวัสดีจ้ะ <strong>' + esc(callName()) + '</strong> วันนี้เป็นยังไงบ้าง?</p>' : '';
+    const hi = 'สวัสดีจ้ะ' + (callName() !== 'น้อง' ? ' <strong>' + esc(callName()) + '</strong>' : '') + ' ';
+    let gm = 'happy', gt = 'วันนี้เป็นยังไงบ้าง? บันทึกอาการให้พี่ดูหน่อยนะ';
+    if (!C.last) { gm = 'smile'; gt = 'พี่โคซี่เอง เริ่มจากใส่ประจำเดือนครั้งล่าสุดนะ'; }
+    else if (A.urgent || A.level >= 2) { gm = 'alert'; gt = 'พี่เป็นห่วงนะ มีเรื่องที่ควรให้หมอดู กดดูผลด้านล่างได้เลย'; }
+    else if (A.level === 1) { gm = 'worry'; gt = 'มีบางอย่างที่พี่อยากให้จับตา ดูผลด้านล่างนะ'; }
+    else if (C.inPeriod) { gm = 'sleep'; gt = 'ช่วงมีประจำเดือน พักผ่อนเยอะๆ ดื่มน้ำอุ่นนะ'; }
+    const greeting = '<div class="hello">' + mascot(gm) + '<p class="bubble">' + hi + gt + '</p></div>';
     let h = greeting + calHTML(C, L) + (C.last ? hormoneHTML(C) : '') + sxHTML();
     if (S.started && !C.last) h += cloud.loading ? '<section class="card"><p class="muted">กำลังโหลดข้อมูลของคุณ…</p></section>' : setupHTML();
     h += '<button type="button" class="btn primary block" data-act="log-today">บันทึกวันนี้</button>';
     if (C.last) {
-      h += '<a class="strip" href="#log" data-act="see-result"><span class="pill" data-level="' + A.level + '">' + statusLabel(A) + '</span><span class="strip-t">' + statusLine(A) + '</span><span class="strip-go">ดูผล ›</span></a>';
+      h += '<a class="strip" href="#log" data-act="see-result">' + mascot(levelMood(A.level, A.urgent), '', { steam: false }) + '<span class="pill" data-level="' + A.level + '">' + statusLabel(A) + '</span><span class="strip-t">' + statusLine(A) + '</span><span class="strip-go">ดูผล ›</span></a>';
       if (C.until < -6 || C.cd > 35) h += '<a class="strip" href="#log" data-act="see-miss"><span class="strip-t">เมนไม่มา เป็นอะไรได้บ้าง ต้องทำยังไง</span><span class="strip-go">ดู ›</span></a>';
       h += detailHTML(C);
     }
@@ -1608,12 +1677,12 @@ function summaryText(logs, profile, today, A) {
       : A.level === 2 ? 'พบสัญญาณที่ควรให้แพทย์ตรวจ แนะนำให้นัดหมายในเร็วๆ นี้'
       : A.level === 1 ? 'มี ' + A.findings.length + ' เรื่องที่ควรจับตา ดูรายละเอียดด้านล่าง แล้วบันทึกต่อเพื่อดูแนวโน้ม'
       : 'ช่วงนี้ทุกอย่างอยู่ในเกณฑ์ปกติ บันทึกต่อไปเรื่อยๆ นะ';
-    let h = '<section class="status" data-level="' + A.level + '"><div class="status-title">' + statusLabel(A) + '</div><p>' + desc + '</p>'
+    let h = '<section class="status" data-level="' + A.level + '"><div class="status-row">' + mascot(levelMood(A.level, A.urgent)) + '<div><div class="status-title">' + statusLabel(A) + '</div><p>' + desc + '</p></div></div>'
       + (A.urgent ? '<div class="inline"><span class="phone">1669</span><button type="button" class="btn sm" data-act="copy" data-copy="1669">คัดลอกเบอร์</button><a class="btn primary sm" href="tel:1669">โทร 1669</a></div>' : '')
       + (A.logged14 < 5 ? '<p class="small">บันทึกใน 14 วันล่าสุดมี ' + A.logged14 + ' วัน ผลประเมินอาจยังไม่แม่นยำ</p>' : '') + '</section>';
     if (A.level >= 2) h += hospHTML();
     h += '<h2>สิ่งที่พบ</h2>';
-    if (!A.findings.length) h += '<div class="card"><p>ยังไม่พบสิ่งที่ต้องจับตาจากบันทึก การบันทึกต่อเนื่องทุกวันช่วยให้เห็นแนวโน้มชัดขึ้น</p></div>';
+    if (!A.findings.length) h += '<div class="card empty-cozy">' + mascot('happy') + '<p>ยังไม่พบสิ่งที่ต้องจับตาจากบันทึก การบันทึกต่อเนื่องทุกวันช่วยให้เห็นแนวโน้มชัดขึ้น</p></div>';
     A.findings.forEach(f => {
       h += '<article class="finding"><div class="finding-h"><span class="pill" data-level="' + f.level + '">' + (f.urgent ? 'ควรพบแพทย์ทันที' : LEVELS[f.level]) + '</span><h3>' + esc(f.title) + '</h3></div>'
         + '<p>' + esc(f.found) + '</p>'
@@ -1630,7 +1699,7 @@ function summaryText(logs, profile, today, A) {
     if (missDur === null) return '<p class="muted center">เลือกระยะเวลาด้านบนเพื่อดูคำแนะนำ</p>';
     const G = missGuide(missDur, missTicks, S.started ? S.profile : {});
     const desc = G.level === 2 ? 'ควรนัดพบแพทย์เพื่อหาสาเหตุ' : G.level === 1 ? 'ยังรอดูได้ แต่มีสิ่งที่ควรทำตามขั้นตอนด้านล่าง' : 'ยังไม่ถือว่าขาด มาช้าบ้างเป็นเรื่องปกติ';
-    let h = '<section class="status" data-level="' + G.level + '"><div class="status-title">' + LEVELS[G.level] + '</div><p>' + desc + '</p></section>';
+    let h = '<section class="status" data-level="' + G.level + '"><div class="status-row">' + mascot(levelMood(G.level)) + '<div><div class="status-title">' + LEVELS[G.level] + '</div><p>' + desc + '</p></div></div></section>';
     h += '<section class="card stack"><h2>อาจเป็นอะไร</h2><dl class="why">' + G.causes.map(c => '<dt>' + esc(c[0]) + '</dt><dd>' + esc(c[1]) + '</dd>').join('') + '</dl></section>';
     h += '<section class="card stack"><h2>ต้องทำยังไง</h2><ol class="steps">' + G.steps.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>' + (G.why ? '<p class="small muted">' + esc(G.why) + '</p>' : '') + '</section>';
     if (G.level >= 2) h += hospHTML();
@@ -1690,12 +1759,19 @@ function summaryText(logs, profile, today, A) {
     const el = document.createElement('div'); el.className = 'msg ' + kind;
     if (kind === 'cozy') { const w = document.createElement('span'); w.className = 'who'; w.textContent = 'พี่โคซี่'; el.appendChild(w); }
     const b = document.createElement('span'); b.className = 'body'; b.textContent = text; el.appendChild(b);
+    if (kind === 'cozy') { cozyRow(el, msgMood(text), quiet); return; }
     $('#msgs').appendChild(el); if (!quiet) el.scrollIntoView({ block: 'nearest' });
+  }
+  const msgMood = t => /1669|ห้องฉุกเฉิน|อย่ารอ/.test(t) ? 'alert' : /^สวัสดี/.test(t) ? 'happy' : 'smile';
+  function cozyRow(el, mood, quiet) {
+    const row = document.createElement('div'); row.className = 'msg-row';
+    row.innerHTML = mascot(mood, '', { steam: false }); row.appendChild(el);
+    $('#msgs').appendChild(row); if (!quiet) row.scrollIntoView({ block: 'nearest' });
   }
   function addLock(quiet) {
     const el = document.createElement('div'); el.className = 'msg lock';
     el.innerHTML = '<span><strong>เรื่องนี้อยู่นอกหัวข้อฟรี</strong><br>ถามได้ทุกเรื่องใน Cozy Plus หรือเลือกหัวข้อฟรีด้านล่าง ถ้ากังวลเรื่องอาการ ดูผลวิเคราะห์ในแท็บบันทึกได้ฟรี</span><button type="button" class="btn sm outline" data-act="plus-open">ดู Cozy Plus</button>';
-    $('#msgs').appendChild(el); if (!quiet) el.scrollIntoView({ block: 'nearest' });
+    cozyRow(el, 'smile', quiet);
   }
   function renderChat() { $('#chatClear').hidden = chatLog.length === 0; }
   function paintChat() {
@@ -1723,7 +1799,7 @@ function summaryText(logs, profile, today, A) {
     el.innerHTML = '<span><strong>วิเคราะห์รูปด้วย AI อยู่ใน Cozy Plus ขึ้นไป</strong><br>ตอนนี้บอกพี่ได้ว่าในรูปเป็นแบบไหน พี่จะอธิบายให้ฟรี รูปนี้อยู่ในเครื่องนี้เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์</span>'
       + '<div class="chips">' + PHOTO_CHOICES.map((c, i) => '<button type="button" class="chip" data-act="photo-pick" data-i="' + i + '">' + c[0] + '</button>').join('') + '</div>'
       + '<button type="button" class="btn sm outline" data-act="plus-open">ดูแพ็กเกจสมาชิก</button>';
-    $('#msgs').appendChild(el); if (!quiet) el.scrollIntoView({ block: 'nearest' });
+    cozyRow(el, 'happy', quiet);
   }
   function sendPhoto(file) {
     if (!file || !/^image\//.test(file.type)) { toast('เลือกไฟล์รูปภาพเท่านั้น'); return; }
@@ -2384,6 +2460,7 @@ function summaryText(logs, profile, today, A) {
 
   /* ---------- boot ---------- */
   $('#todayLabel').textContent = fmtFull.format(new Date());
+  fillMascots();
   paintChat();
   showGate();
   initBackend();
