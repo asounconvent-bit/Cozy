@@ -23,3 +23,5 @@ window.COZY_REWARDS = [
 
 // 4) อีเมลผู้ดูแลแอพ แสดงในนโยบายความเป็นส่วนตัว
 window.COZY_CONTACT = "";
+// 5) พี่โคซี่ AI (Cloudflare Worker)
+window.COZY_AI = { url: "https://cozy-ai.asounconvent.workers.dev", freePerDay: 20, photosPerDay: 3 };
