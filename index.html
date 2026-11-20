@@ -383,6 +383,16 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
 .empty-cozy{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .empty-cozy .mascot{width:76px}
 @media (prefers-reduced-motion: reduce){ .intro-mascot{animation:none} }
+.msg.typing{padding:.8rem 1rem}
+.dots{display:inline-flex;gap:5px;align-items:center;height:1rem}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:.35;animation:czDot 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes czDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion: reduce){ .dots i{animation:none;opacity:.6} }
+.photo-ask{gap:8px;width:100%}
+.photo-ask .input{width:100%}
+.warn-note{font-size:.875rem;color:var(--alert);background:var(--alert-bg);border-radius:10px;padding:6px 10px}
+label.attach.off{opacity:.4;pointer-events:none}
 </style>
 </head>
 <body>
@@ -400,10 +410,10 @@ details.sx[open]>summary::after{transform:rotate(-135deg)}
     <section id="v-home" class="stack" hidden></section>
     <section id="v-log" class="stack" hidden></section>
     <section id="v-chat" class="stack" hidden>
-      <div class="cozy-card"><span class="cc-m" data-mascot="happy"></span><div class="cc-t"><h2 class="nm">พี่โคซี่</h2><div class="st">ออนไลน์ · พร้อมคุย</div></div><button type="button" class="btn sm" id="chatClear" data-act="chat-clear" hidden>ล้างแชต</button></div>
+      <div class="cozy-card"><span class="cc-m" data-mascot="happy"></span><div class="cc-t"><h2 class="nm">พี่โคซี่</h2><div class="st" id="chatSub">ออนไลน์ · พร้อมคุย</div></div><button type="button" class="btn sm" id="chatClear" data-act="chat-clear" hidden>ล้างแชต</button></div>
       <div class="msgs" id="msgs" aria-live="polite"></div>
-      <div class="field"><span class="label">หัวข้อที่ถามได้ฟรี</span><div class="chips" id="topics"></div></div>
-      <button type="button" class="btn block" data-act="plus-open">ถามเรื่องอื่นได้ทุกเรื่อง<span class="tag">Plus</span></button>
+      <div class="field"><span class="label" id="topicsLabel">หัวข้อที่ถามได้ฟรี</span><div class="chips" id="topics"></div></div>
+      <button type="button" class="btn block" data-act="plus-open" id="plusChatBtn">ถามเรื่องอื่นได้ทุกเรื่อง<span class="tag">Plus</span></button>
       <form class="composer" id="composer">
         <label class="sr" for="chatInput">พิมพ์อาการหรือคำถาม</label>
         <label class="attach" for="chatPhoto" title="แนบรูป" aria-label="แนบรูปให้พี่โคซี่ดู"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></label>
@@ -1205,15 +1215,31 @@ function summaryText(logs, profile, today, A) {
     S.dirty = dirty; saveLocal();
     Object.keys(dirty).forEach(push);
   }
+  /* เปิดแอปซ้ำ: ถ้าเครื่องนี้เคยล็อกอินไว้ เปิดหน้าแอปจากสำเนาในเครื่องทันที ไม่ต้องรอหน้าเข้าสู่ระบบ */
+  let quickUid = null;
+  const LAST = 'cozy:last_uid';
+  function quickStart() {
+    let uid = null;
+    try { uid = localStorage.getItem(LAST); if (!uid || !localStorage.getItem('cozy:web:' + uid)) return; } catch (e) { return; }
+    quickUid = uid; LS = 'cozy:web:' + uid;
+    S = blank(); loadLocal(); S.started = true;
+    cloud.state = 'in'; cloud.loading = true;
+    showApp(); go(); checkAskNickname();
+  }
+  function forgetQuick() { quickUid = null; try { localStorage.removeItem(LAST); } catch (e) { /* ignore */ } }
   async function initBackend() {
     if (!CFG.apiKey || !CFG.projectId || /^PASTE/i.test(CFG.apiKey)) { cloud.state = 'unconfigured'; showGate(); return; }
+    quickStart();
     try {
       const base = 'https://www.gstatic.com/firebasejs/' + FB_VER + '/';
       const mods = await timeout(Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]), 20000);
       const app = mods[0].initializeApp(CFG);
       cloud.fb = { au: mods[1], fs: mods[2], auth: mods[1].getAuth(app), db: mods[2].getFirestore(app) };
       mods[1].onAuthStateChanged(cloud.fb.auth, onUser);
-    } catch (e) { cloud.state = 'error'; showGate(); }
+    } catch (e) {
+      if (quickUid) { cloud.loading = false; cloud.syncErr = 'offline'; return; }
+      cloud.state = 'error'; showGate();
+    }
   }
   async function onUser(user) {
     const seq = ++loadSeq;
@@ -1223,6 +1249,8 @@ function summaryText(logs, profile, today, A) {
     if (!user) {
       cloud.user = null; cloud.col = null; cloud.state = 'out'; cloud.loading = false; cloud.loadFailed = false; cloud.syncErr = '';
       LS = 'cozy:web:anon'; S = blank();
+      const wasQuick = !!quickUid; forgetQuick();
+      if (wasQuick) history.replaceState(null, '', '#home');
       if (demoMode) { showApp(); go(); checkAskNickname(); } else showGate();
       return;
     }
@@ -1234,7 +1262,8 @@ function summaryText(logs, profile, today, A) {
     S = blank(); loadLocal(); S.started = true;
     const col = makeCol(cloud.fb, user.uid);
     cloud.col = null; cloud.loading = true;
-    showGate();
+    const quick = quickUid === user.uid; quickUid = null;
+    if (!quick) showGate();
     try {
       const docs = await timeout(col.get(), 15000);
       if (seq !== loadSeq) return;
@@ -1258,6 +1287,8 @@ function summaryText(logs, profile, today, A) {
       push('profile');
     }
     recordCurrentDevice();
+    try { localStorage.setItem(LAST, user.uid); } catch (e) { /* ignore */ }
+    if (quick) { showApp(); if (!(route === 'log' && logPane === 'form')) go(); authErr(''); return; }
     if (freshLogin) { freshLogin = false; if (location.hash && location.hash !== '#home') history.replaceState(null, '', '#home'); }
     draft = null; showApp(); go();
     paintTopAvatar();
@@ -1768,16 +1799,31 @@ function summaryText(logs, profile, today, A) {
     row.innerHTML = mascot(mood, '', { steam: false }); row.appendChild(el);
     $('#msgs').appendChild(row); if (!quiet) row.scrollIntoView({ block: 'nearest' });
   }
-  function addLock(quiet) {
+  function addLock(quiet, kind) {
     const el = document.createElement('div'); el.className = 'msg lock';
-    el.innerHTML = '<span><strong>เรื่องนี้อยู่นอกหัวข้อฟรี</strong><br>ถามได้ทุกเรื่องใน Cozy Plus หรือเลือกหัวข้อฟรีด้านล่าง ถ้ากังวลเรื่องอาการ ดูผลวิเคราะห์ในแท็บบันทึกได้ฟรี</span><button type="button" class="btn sm outline" data-act="plus-open">ดู Cozy Plus</button>';
+    const head = kind === 'quota' ? 'วันนี้คุยกับพี่โคซี่ AI ครบ ' + AI.freePerDay + ' ข้อความฟรีแล้ว'
+      : kind === 'signin' ? 'สมัครฟรีเพื่อคุยกับพี่โคซี่ได้ทุกเรื่อง'
+      : kind === 'down' ? 'ตอนนี้พี่โคซี่ AI ตอบไม่ได้ชั่วคราว'
+      : 'เรื่องนี้อยู่นอกหัวข้อฟรี';
+    const sub = kind === 'quota' ? 'พรุ่งนี้คุยได้อีก หรือคุยได้ไม่จำกัดใน Cozy Plus ระหว่างนี้เลือกหัวข้อด้านล่างได้'
+      : kind === 'signin' ? 'สมาชิกคุยกับพี่โคซี่ AI ได้ฟรีวันละ ' + AI.freePerDay + ' ข้อความ ส่งรูปให้ช่วยดูได้วันละ ' + AI.photosPerDay + ' รูป'
+      : kind === 'down' ? 'ลองใหม่อีกสักครู่ ระหว่างนี้เลือกหัวข้อด้านล่างได้ ถ้ามีอาการรุนแรงโทร 1669'
+      : 'ถามได้ทุกเรื่องใน Cozy Plus หรือเลือกหัวข้อฟรีด้านล่าง ถ้ากังวลเรื่องอาการ ดูผลวิเคราะห์ในแท็บบันทึกได้ฟรี';
+    el.innerHTML = '<span><strong>' + head + '</strong><br>' + sub + '</span>' + (kind === 'signin' ? '<button type="button" class="btn sm outline" data-act="start">สมัคร / เข้าสู่ระบบ</button>' : kind === 'down' ? '' : '<button type="button" class="btn sm outline" data-act="plus-open">ดู Cozy Plus</button>');
     cozyRow(el, 'smile', quiet);
   }
-  function renderChat() { $('#chatClear').hidden = chatLog.length === 0; }
+  function renderChat() {
+    $('#chatClear').hidden = chatLog.length === 0;
+    const sub = $('#chatSub'); if (!sub) return;
+    if (aiOn()) { const left = Math.max(0, AI.freePerDay - aiCount('m')); sub.textContent = isPlus() ? 'AI · คุยได้ไม่จำกัด' : 'AI · ฟรีวันนี้อีก ' + left + ' ข้อความ'; }
+    else sub.textContent = 'ออนไลน์ · พร้อมคุย';
+    $('#topicsLabel').textContent = aiOn() ? 'ถามเร็ว' : 'หัวข้อที่ถามได้ฟรี';
+    $('#plusChatBtn').innerHTML = (aiOn() ? 'คุยได้ไม่จำกัด' : 'ถามเรื่องอื่นได้ทุกเรื่อง') + '<span class="tag">Plus</span>';
+  }
   function paintChat() {
     $('#msgs').innerHTML = '';
     addMsg('cozy', greetMsg(), true);
-    chatLog.forEach(m => { if (m.r === 'l') addLock(true); else if (m.r === 'p') addPhoto(m.t, true); else if (m.r === 'q') addPhotoReply(true); else addMsg(m.r === 'u' ? 'me' : 'cozy', m.t, true); });
+    chatLog.forEach(m => { if (m.r === 'l') addLock(true, m.t); else if (m.r === 'a') addPhotoAsk(true, m.t || (pendingPhoto ? '' : 'no')); else if (m.r === 'p') addPhoto(m.t, true); else if (m.r === 'q') addPhotoReply(true); else addMsg(m.r === 'u' ? 'me' : 'cozy', m.t, true); });
     $('#topics').innerHTML = TOPICS.map(t => '<button type="button" class="chip" data-act="topic">' + t[0] + '</button>').join('') + '<button type="button" class="chip" data-act="topic">ผลวิเคราะห์ของฉัน</button>';
     renderChat();
   }
@@ -1801,18 +1847,58 @@ function summaryText(logs, profile, today, A) {
       + '<button type="button" class="btn sm outline" data-act="plus-open">ดูแพ็กเกจสมาชิก</button>';
     cozyRow(el, 'happy', quiet);
   }
+  /* ---------- พี่โคซี่ AI (Cloudflare Worker) ---------- */
+  const AI = Object.assign({ url: '', freePerDay: 20, photosPerDay: 3 }, window.COZY_AI || {});
+  let aiBusy = false, pendingPhoto = null;
+  const isPlus = () => !!(S.started && S.profile && S.profile.plusActive);
+  const aiOn = () => !!AI.url && cloud.state === 'in' && !!(cloud.fb && cloud.fb.auth && cloud.fb.auth.currentUser);
+  const aiKey = k => 'cozy:ai:' + TODAY + ':' + k;
+  function aiCount(k) { try { return Number(localStorage.getItem(aiKey(k)) || 0); } catch (e) { return 0; } }
+  function aiUse(k) { try { localStorage.setItem(aiKey(k), String(aiCount(k) + 1)); } catch (e) { /* ignore */ } }
+  const aiLeft = k => isPlus() || aiCount(k) < (k === 'p' ? AI.photosPerDay : AI.freePerDay);
+  function aiContext() {
+    const out = [];
+    if (callName() !== 'น้อง') out.push('ชื่อเล่น ' + callName());
+    if (S.started) {
+      const A = analyze(S.logs, S.profile, TODAY), C = A.cycle;
+      if (C.last) out.push(C.inPeriod ? 'ตอนนี้มีประจำเดือนวันที่ ' + C.cd : 'วันที่ ' + C.cd + ' ของรอบ รอบยาวประมาณ ' + C.len + ' วัน' + (C.until < 0 ? ' ประจำเดือนเลยกำหนดมา ' + (-C.until) + ' วัน' : ''));
+      out.push('ผลคัดกรองในแอป: ' + statusLabel(A) + (A.findings.length ? ' (' + A.findings.map(f => f.title).join(', ') + ')' : ''));
+    }
+    return out.join(' · ');
+  }
+  function showTyping() {
+    const el = document.createElement('div'); el.className = 'msg cozy typing';
+    el.innerHTML = '<span class="dots" aria-label="พี่โคซี่กำลังพิมพ์"><i></i><i></i><i></i></span>';
+    cozyRow(el, 'smile');
+    return el.parentNode;
+  }
+  function setBusy(b) { aiBusy = b; $('#chatSend').disabled = b; const a = $('label.attach'); if (a) a.classList.toggle('off', b); }
+  async function askAI(image) {
+    const row = showTyping(); setBusy(true);
+    try {
+      const token = await cloud.fb.auth.currentUser.getIdToken();
+      const messages = chatLog.filter(m => m.r === 'u' || m.r === 'c').slice(-10).map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }));
+      const res = await timeout(fetch(AI.url, { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ messages: messages, image: image || undefined, context: aiContext() }) }), 60000);
+      const j = await res.json().catch(() => ({}));
+      if (res.ok && j.text) return { text: String(j.text).slice(0, 3000) };
+      return { err: j.error || 'ai' };
+    } catch (e) { return { err: 'net' }; }
+    finally { row.remove(); setBusy(false); }
+  }
   function sendPhoto(file) {
     if (!file || !/^image\//.test(file.type)) { toast('เลือกไฟล์รูปภาพเท่านั้น'); return; }
+    if (aiBusy) return;
     const r = new FileReader();
     r.onload = function () {
       const img = new Image();
       img.onload = function () {
-        const k = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        const k = Math.min(1, 768 / Math.max(img.width, img.height)), c = document.createElement('canvas');
         c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
         const url = c.toDataURL('image/jpeg', 0.8);
         addPhoto(url); chatLog.push({ r: 'p', t: url });
-        addPhotoReply(); chatLog.push({ r: 'q', t: '' });
+        if (aiOn() && aiLeft('p')) { pendingPhoto = url; addPhotoAsk(false, ''); chatLog.push({ r: 'a', t: '' }); }
+        else { addPhotoReply(); chatLog.push({ r: 'q', t: '' }); }
         if (chatLog.length > 60) chatLog = chatLog.slice(-60);
         renderChat();
       };
@@ -1821,13 +1907,64 @@ function summaryText(logs, profile, today, A) {
     };
     r.readAsDataURL(file);
   }
+  function addPhotoAsk(quiet, state) {
+    const el = document.createElement('div'); el.className = 'msg lock photo-ask';
+    if (state) el.innerHTML = '<span class="small muted">' + (state === 'sent' ? 'ส่งรูปให้พี่โคซี่ AI ดูแล้ว' : 'ไม่ได้ส่งรูปนี้') + '</span>';
+    else el.innerHTML = '<span><strong>ส่งรูปนี้ให้พี่โคซี่ AI ช่วยดูไหม?</strong><br>รูปจะถูกส่งไปให้ AI ดูแล้วลบทิ้ง ไม่ถูกเก็บและไม่ถูกใช้ฝึก AI '
+      + (isPlus() ? '' : 'วันนี้ส่งฟรีได้อีก ' + Math.max(0, AI.photosPerDay - aiCount('p')) + ' รูป') + '</span>'
+      + '<span class="warn-note">ห้ามส่งรูปอวัยวะเพศหรือจุดซ่อนเร้น ถ้ากังวลบริเวณนั้น ไปพบแพทย์หรือโทรปรึกษาฟรี 1663</span>'
+      + '<label class="sr" for="photoQ">อยากให้พี่ดูอะไรในรูป</label><input class="input" id="photoQ" maxlength="200" placeholder="อยากให้พี่ดูอะไร เช่น สิวที่คางเป็นแบบไหน">'
+      + '<div class="inline"><button type="button" class="btn sm primary" data-act="photo-ai-ok">ส่งให้พี่โคซี่ดู</button><button type="button" class="btn sm" data-act="photo-ai-no">ไม่ส่ง</button></div>';
+    cozyRow(el, 'smile', quiet);
+  }
+  function settlePhotoAsk(state) {
+    for (let i = chatLog.length - 1; i >= 0; i--) if (chatLog[i].r === 'a' && !chatLog[i].t) { chatLog[i].t = state; break; }
+    const box = [...document.querySelectorAll('#msgs .photo-ask')].pop();
+    if (box) box.innerHTML = '<span class="small muted">' + (state === 'sent' ? 'ส่งรูปให้พี่โคซี่ AI ดูแล้ว' : 'ไม่ได้ส่งรูปนี้') + '</span>';
+  }
+  async function photoAiOk() {
+    if (!pendingPhoto || aiBusy) return;
+    const q = ($('#photoQ') && $('#photoQ').value.trim().slice(0, 200)) || 'ช่วยดูรูปนี้ให้หน่อย';
+    const url = pendingPhoto; pendingPhoto = null;
+    settlePhotoAsk('sent');
+    addMsg('me', q); chatLog.push({ r: 'u', t: '[ส่งรูป] ' + q });
+    if (!isPlus()) aiUse('p');
+    renderChat();
+    const out = await askAI(url);
+    aiAnswer(out, q);
+  }
+  function aiAnswer(out, q) {
+    if (out.text) {
+      const a = (URGENT.test(q) && !/1669/.test(out.text) ? URGENT_TEXT + '\n\n' : '') + out.text;
+      addMsg('cozy', a); chatLog.push({ r: 'c', t: a });
+    } else {
+      const f = freeReply(q);
+      if (f !== null) { addMsg('cozy', f); chatLog.push({ r: 'c', t: f }); }
+      else { addLock(false, out.err === 'limit' ? 'quota' : 'down'); chatLog.push({ r: 'l', t: out.err === 'limit' ? 'quota' : 'down' }); }
+    }
+    if (chatLog.length > 60) chatLog = chatLog.slice(-60);
+    renderChat();
+  }
   function sendChat(text) {
     text = String(text || '').trim().slice(0, 300);
-    if (!text) return;
+    if (!text || aiBusy) return;
     addMsg('me', text); chatLog.push({ r: 'u', t: text });
-    const a = freeReply(text);
-    if (a === null) { addLock(); chatLog.push({ r: 'l', t: '' }); }
-    else { addMsg('cozy', a); chatLog.push({ r: 'c', t: a }); }
+    if (aiOn()) {
+      if (aiLeft('m')) {
+        if (!isPlus()) aiUse('m');
+        renderChat();
+        askAI(null).then(out => aiAnswer(out, text));
+        return;
+      }
+      const f = freeReply(text);
+      if (f !== null) { addMsg('cozy', f); chatLog.push({ r: 'c', t: f }); }
+      else { addLock(false, 'quota'); chatLog.push({ r: 'l', t: 'quota' }); }
+    } else {
+      const a = freeReply(text);
+      const lockKind = AI.url && !S.started ? 'signin' : '';
+      if (a === null) { addLock(false, lockKind); chatLog.push({ r: 'l', t: lockKind }); }
+      else { addMsg('cozy', a); chatLog.push({ r: 'c', t: a }); }
+    }
     if (chatLog.length > 60) chatLog = chatLog.slice(-60);
     renderChat();
   }
@@ -1875,6 +2012,7 @@ function summaryText(logs, profile, today, A) {
       'เก็บเพื่ออะไร: เพื่อแสดงปฏิทิน ผลคัดกรอง และสถานะที่คุณเลือกแชร์ให้คนที่มีรหัสจับคู่ของคุณ',
       'เก็บที่ไหน: บนบริการ Firebase ของ Google และสำเนาในเบราว์เซอร์ของเครื่องที่คุณเข้าสู่ระบบ',
       'ใครเห็นได้: คุณ และผู้ดูแลระบบของแอพซึ่งเข้าถึงฐานข้อมูลได้เพื่อดูแลระบบ คนที่มีรหัสจับคู่ของคุณเห็นเฉพาะสถานะที่คุณเปิดแชร์',
+      'คุยกับพี่โคซี่ AI: ข้อความแชต รูปที่คุณกดยืนยันส่ง และข้อมูลย่อ (ชื่อเล่น วันที่ของรอบเดือน สถานะผลคัดกรอง) ถูกส่งไปประมวลผลที่ Cloudflare Workers AI เพื่อตอบคำถามเท่านั้น ไม่ถูกเก็บหลังตอบเสร็จ และไม่ถูกใช้ฝึก AI ตัวแชตเก็บอยู่ในเครื่องนี้ชั่วคราว',
       'การลบ: ลบข้อมูลหรือลบบัญชีได้ทุกเมื่อ ที่รูปโปรไฟล์มุมขวาบน > ข้อมูลส่วนตัว',
       'ติดต่อผู้ดูแลแอพ: ' + (window.COZY_CONTACT || '[ยังไม่ได้ระบุ ให้เจ้าของแอพใส่อีเมลใน config.js]')
     ].join('\n\n');
@@ -2115,6 +2253,7 @@ function summaryText(logs, profile, today, A) {
     } catch (e) { authErr(AUTH_MSG[e && e.code] || 'ส่งอีเมลไม่สำเร็จ ลองใหม่อีกครั้ง'); }
   }
   function signOutNow() {
+    forgetQuick();
     closeSheets();
     try { if (!Object.keys(S.dirty).length) localStorage.removeItem(LS); } catch (e) { /* ignore */ }
     demoMode = false;
@@ -2390,6 +2529,8 @@ function summaryText(logs, profile, today, A) {
     else if (act === 'intro-close') hideIntro();
     else if (act === 'goto-me') { closeSheets(); location.hash = '#me'; }
     else if (act === 'me-back') { if (history.length > 1) history.back(); else location.hash = '#home'; }
+    else if (act === 'photo-ai-ok') photoAiOk();
+    else if (act === 'photo-ai-no') { pendingPhoto = null; settlePhotoAsk('no'); addPhotoReply(); chatLog.push({ r: 'q', t: '' }); renderChat(); }
     else if (act === 'photo-pick') { const c = PHOTO_CHOICES[Number(t.dataset.i)]; if (c) { addMsg('me', c[0]); chatLog.push({ r: 'u', t: c[0] }); addMsg('cozy', c[1]); chatLog.push({ r: 'c', t: c[1] }); renderChat(); } }
     else if (act === 'pill-set') {
       const k = t.dataset.k, v = t.dataset.v;
