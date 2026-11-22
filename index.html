@@ -1704,18 +1704,37 @@ function summaryText(logs, profile, today, A) {
     return h + '</div></details>';
   }
   function repaintSx() { const b = $('#sxBox'); if (!b) return; sxOpen = true; b.outerHTML = sxFormHTML(); }
-  function hospHTML() {
+  function hospHTML(id) {
     const p = S.started ? S.profile : defProfile();
-    let h = '<section class="card stack"><h2>ปรึกษาและรับการรักษา</h2>';
+    let h = '<section class="card stack"' + (id ? ' id="' + id + '"' : '') + '><h2>โรงพยาบาลใกล้ฉัน</h2>'
+      + '<div class="stack" id="nearBox" style="gap:8px">' + nearHTML() + '</div>';
     if (p.hospName || p.hospPhone) {
       const tel = String(p.hospPhone).replace(/[^0-9+]/g, '');
       h += '<div class="hosp"><div><strong>' + esc(p.hospName || 'โรงพยาบาลของฉัน') + '</strong>' + (p.hospPhone ? '<div class="phone">' + esc(p.hospPhone) + '</div>' : '') + '</div>'
         + (tel ? '<div class="inline"><button type="button" class="btn" data-act="copy" data-copy="' + esc(p.hospPhone) + '">คัดลอกเบอร์</button><a class="btn primary" href="tel:' + esc(tel) + '">โทร</a></div>' : '') + '</div>';
     } else {
-      h += '<p class="muted">ยังไม่ได้ใส่โรงพยาบาลที่คุณไว้ใจ ใส่ไว้ครั้งเดียว ชื่อและเบอร์จะขึ้นตรงนี้ทุกครั้งที่ควรพบแพทย์</p><button type="button" class="btn" data-act="goto-hosp">ตั้งค่าโรงพยาบาลของฉัน</button>';
+      h += '<p class="small muted">ยังไม่ได้ใส่โรงพยาบาลประจำ ใส่ไว้ครั้งเดียว ชื่อและเบอร์จะขึ้นตรงนี้ให้โทรได้ทันที</p><button type="button" class="btn" data-act="goto-hosp">ตั้งค่าโรงพยาบาลของฉัน</button>';
     }
-    h += '<a class="btn" href="' + esc(mapsUrl(p.homeArea)) + '" target="_blank" rel="noopener">ค้นหาโรงพยาบาล' + ((p.homeArea || p.homeLat) ? 'ใกล้บ้าน' : 'ใกล้ฉัน') + 'ใน Google Maps</a>';
+    if (p.homeArea || p.homeLat) h += '<a class="btn" href="' + esc(mapsUrl(p.homeArea)) + '" target="_blank" rel="noopener">ค้นหาโรงพยาบาลใกล้บ้านใน Google Maps</a>';
     return h + hotlines(false) + '</section>';
+  }
+  /* ค้นหาโรงพยาบาลจากตำแหน่งตอนนี้ (GPS) — 2 จังหวะ: หาตำแหน่งก่อน แล้วค่อยให้กดลิงก์ เพราะ iPhone บล็อกการเปิดหน้าใหม่อัตโนมัติ */
+  let nearPos = null;
+  const nearUrl = pos => 'https://www.google.com/maps/search/' + encodeURIComponent('โรงพยาบาล') + '/@' + pos.lat + ',' + pos.lng + ',14z';
+  function nearHTML(state) {
+    if (nearPos) return '<a class="btn primary" href="' + esc(nearUrl(nearPos)) + '" target="_blank" rel="noopener">เปิดแผนที่โรงพยาบาลรอบตัวฉัน ›</a><p class="small muted">ใช้ตำแหน่งตอนนี้ ไม่ได้บันทึกเก็บไว้</p>';
+    if (state === 'busy') return '<button type="button" class="btn primary" disabled>กำลังหาตำแหน่ง…</button>';
+    return '<button type="button" class="btn primary" data-act="near-now">ค้นหาโรงพยาบาลใกล้ฉันตอนนี้</button>'
+      + (state === 'fail' ? '<p class="small muted">หาตำแหน่งไม่ได้ ลองเปิดการเข้าถึงตำแหน่งให้ Safari หรือกดลิงก์นี้แทน</p><a class="btn" href="https://www.google.com/maps/search/' + encodeURIComponent('โรงพยาบาลใกล้ฉัน') + '" target="_blank" rel="noopener">ค้นหาใน Google Maps</a>' : '');
+  }
+  function nearNow() {
+    const box = $('#nearBox'); if (!box) return;
+    if (!navigator.geolocation) { box.innerHTML = nearHTML('fail'); return; }
+    box.innerHTML = nearHTML('busy');
+    navigator.geolocation.getCurrentPosition(pos => {
+      nearPos = { lat: pos.coords.latitude.toFixed(4), lng: pos.coords.longitude.toFixed(4) };
+      const b = $('#nearBox'); if (b) b.innerHTML = nearHTML();
+    }, () => { const b = $('#nearBox'); if (b) b.innerHTML = nearHTML('fail'); }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
   }
   function resultHTML() {
     const A = analyze(logs(), prof(), TODAY);
@@ -1726,7 +1745,7 @@ function summaryText(logs, profile, today, A) {
     let h = '<section class="status" data-level="' + A.level + '"><div class="status-row">' + mascot(levelMood(A.level, A.urgent)) + '<div><div class="status-title">' + statusLabel(A) + '</div><p>' + desc + '</p></div></div>'
       + (A.urgent ? '<div class="inline"><span class="phone">1669</span><button type="button" class="btn sm" data-act="copy" data-copy="1669">คัดลอกเบอร์</button><a class="btn primary sm" href="tel:1669">โทร 1669</a></div>' : '')
       + (A.logged14 < 5 ? '<p class="small">บันทึกใน 14 วันล่าสุดมี ' + A.logged14 + ' วัน ผลประเมินอาจยังไม่แม่นยำ</p>' : '') + '</section>';
-    if (A.level >= 2) h += hospHTML();
+    if (A.level >= 2) h += '<a class="btn primary block" href="#nearCard" data-act="jump-near">ดูโรงพยาบาลใกล้ฉัน ↓</a>';
     h += '<h2>สิ่งที่พบ</h2>';
     if (!A.findings.length) h += '<div class="card empty-cozy">' + mascot('happy') + '<p>ยังไม่พบสิ่งที่ต้องจับตาจากบันทึก การบันทึกต่อเนื่องทุกวันช่วยให้เห็นแนวโน้มชัดขึ้น</p></div>';
     A.findings.forEach(f => {
@@ -1738,6 +1757,7 @@ function summaryText(logs, profile, today, A) {
     h += '<div class="inline wide"><button type="button" class="btn" data-act="copy-summary">คัดลอกสรุปให้หมอ</button><button type="button" class="btn" data-act="ask-result">ให้พี่โคซี่สรุปผลนี้</button></div>';
     h += '<details><summary>ดูข้อความสรุปที่จะคัดลอก</summary><pre class="sum" id="sumText">' + esc(summaryText(logs(), prof(), TODAY, A)) + '</pre></details>';
     h += '<p class="small muted center">ผลนี้คัดกรองจากสิ่งที่คุณบันทึก รายการ "อาจเกี่ยวข้องกับ" คือสิ่งที่แพทย์มักตรวจหา ไม่ได้แปลว่าคุณเป็นโรคนั้น</p>';
+    h += hospHTML('nearCard');
     return h;
   }
   let missDur = null, missTicks = null;
@@ -2566,6 +2586,8 @@ function summaryText(logs, profile, today, A) {
     else if (act === 'save-hosp') saveHosp();
     else if (act === 'goto-hosp') { scrollTarget = 'hospCard'; location.hash = '#me'; }
     else if (act === 'geo-home') geoHome();
+    else if (act === 'near-now') nearNow();
+    else if (act === 'jump-near') { ev.preventDefault(); const c = $('#nearCard'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     else if (act === 'geo-clear') { S.profile.homeLat = ''; S.profile.homeLng = ''; push('profile'); $('#geoBox').innerHTML = geoHTML(); $('#mapsLink').href = mapsUrl(val('pHomeArea')); toast('ลบพิกัดบ้านแล้ว'); }
     else if (act === 'share-toggle') { if (!needLogin()) return; const sh = S.profile.share; sh.on = !sh.on; if (sh.on && !sh.code) sh.code = genCode(); push('profile'); renderShare(); syncShare(); toast(sh.on ? 'เปิดการแชร์แล้ว' : 'หยุดแชร์แล้ว'); }
     else if (act === 'share-regen') { S.profile.share.code = genCode(); push('profile'); renderShare(); syncShare(); toast('สร้างรหัสใหม่แล้ว'); }
