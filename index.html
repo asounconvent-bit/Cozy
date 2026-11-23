@@ -73,6 +73,9 @@ a{color:var(--accent)}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 10px;background:var(--bg)}
 .brand{font-family:var(--font-display);font-weight:500;font-size:1.75rem;line-height:1.1;color:var(--accent)}
 .top-r{display:flex;align-items:center;gap:10px}
+.tok-pill{appearance:none;display:inline-flex;align-items:center;gap:6px;height:2.35rem;padding:0 12px 0 8px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;cursor:pointer;flex:none}
+.tok-pill svg{width:1.35rem;height:1.35rem}
+@media (max-width:460px){ .top .today{display:none} }
 .today{font-size:.875rem;color:var(--ink-2);text-align:right}
 .avatar-btn{appearance:none;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);width:2.35rem;height:2.35rem;border-radius:50%;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:500;font-size:.95rem;overflow:hidden;flex:none;transition:transform .12s}
 .avatar-btn:active{transform:scale(.94)}
@@ -416,6 +419,7 @@ label.attach.off{opacity:.4;pointer-events:none}
     <span class="brand-row"><span class="brand-mascot" data-mascot="smile" data-steam="no"></span><span class="brand">Cozy</span></span>
     <div class="top-r">
       <span class="today" id="todayLabel"></span>
+      <button type="button" class="tok-pill" id="tokPill" data-act="tok-open" aria-label="โทเคนของฉัน"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FFC23D"/><circle cx="12" cy="12" r="7" fill="none" stroke="#E09A00" stroke-width="1.6"/><path d="M12 8.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6-2.3-1.3-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z" fill="#fff"/></svg><b id="tokCount">0</b></button>
       <button type="button" class="avatar-btn" id="topAvatar" data-act="acct-open" aria-label="ตั้งค่าบัญชีและโปรไฟล์"></button>
     </div>
   </header>
@@ -444,7 +448,7 @@ label.attach.off{opacity:.4;pointer-events:none}
 </div>
 
 <div class="gate stack" id="gate">
-  <div><span class="gate-mascot" data-mascot="happy"></span><div class="brand big">Cozy</div><p class="muted">นับวันประจำเดือน บันทึกอาการ และรู้ว่าเมื่อไรควรไปหาหมอ</p></div>
+  <div><span class="gate-mascot" data-mascot="happy"></span><div class="brand big">Cozy</div></div>
   <p class="card" id="gateMsg">กำลังตรวจสอบการเข้าสู่ระบบ…</p>
   <form class="card stack" id="authForm" hidden novalidate>
     <div class="seg two" role="tablist"><button type="button" role="tab" data-act="auth-mode" data-mode="in" aria-selected="true">เข้าสู่ระบบ</button><button type="button" role="tab" data-act="auth-mode" data-mode="up" aria-selected="false">สมัครสมาชิก</button></div>
@@ -485,7 +489,6 @@ label.attach.off{opacity:.4;pointer-events:none}
   <div class="sheet-in stack">
     <h2 id="plusT">แพ็กเกจสมาชิก Cozy</h2>
     <div class="price" id="plusPrice"></div>
-    <p class="small muted">การบันทึก ผลวิเคราะห์ ตัวช่วยเมนไม่มา และการจับคู่ ใช้ฟรีตลอด</p>
     <div class="stack" id="plusAct"></div>
     <button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>
   </div>
@@ -1126,6 +1129,7 @@ function summaryText(logs, profile, today, A) {
 
   /* Top right avatar updater */
   function paintTopAvatar() {
+    const tc = $('#tokCount'); if (tc) tc.textContent = String(S.started ? (num(S.profile.tokens) || 0) : 0);
     const btn = $('#topAvatar'); if (!btn) return;
     const av = S.profile.avatar || (cloud.user && cloud.user.photoURL) || '';
     if (av) {
@@ -1479,7 +1483,7 @@ function summaryText(logs, profile, today, A) {
       + (ph ? '<div class="hero-text"><strong>' + ph[0] + '</strong><span>' + ph[1] + '</span></div>' : '')
       + '</div>'
       + '<div class="stats"><div class="stat"><b>' + C.len + ' วัน</b><span>รอบเฉลี่ย</span></div><div class="stat"><b>' + C.periodLen + ' วัน</b><span>มาครั้งละ</span></div><div class="stat"><b>' + thDate(C.last.start) + '</b><span>เริ่มรอบล่าสุด</span></div></div>'
-      + (showF ? '<p class="small muted">จุดสีม่วงบนปฏิทินคือช่วงไข่ตกโดยประมาณ ใช้แทนการคุมกำเนิดไม่ได้</p>' : '')
+      + (showF ? '<p class="small muted">ช่วงไข่ตกเป็นค่าประมาณ ใช้คุมกำเนิดไม่ได้</p>' : '')
       + '</div></details>';
   }
   let hzSel = null;
@@ -1508,15 +1512,14 @@ function summaryText(logs, profile, today, A) {
       + '<div class="hz-axis"><span>วันที่ 1</span><span>' + Math.round(L / 2) + '</span><span>' + L + '</span></div></div>'
       + '<div class="hz-legend"><span><i class="k-lib"></i>ความต้องการทางเพศ</span><span><i class="k-en"></i>พลังงาน</span><span><i class="k-fert"></i>โอกาสตั้งครรภ์สูง</span><span><i class="k-men"></i>มีประจำเดือน</span><span><i class="k-today" style="width:7px;height:7px;border-radius:50%;background:var(--ink)"></i>วันนี้</span></div>'
       + late + '<div class="hz-day" id="hzDay" aria-live="polite">' + hormoneDayHTML(H, C, hzSel) + '</div>'
-      + '<p class="hz-note">กราฟนี้คือแนวโน้มเฉลี่ยจากฮอร์โมน ความต้องการจริงขึ้นกับความเครียด การนอน และความสัมพันธ์ด้วย ความต้องการสูงไม่ได้แปลว่ายินยอม ถามกันทุกครั้ง และการนับวันใช้แทนการคุมกำเนิดไม่ได้</p></section>';
+      + '<p class="hz-note">ความต้องการสูงไม่ได้แปลว่ายินยอม · การนับวันใช้คุมกำเนิดไม่ได้</p></section>';
   }
   const LOCK = '<span class="lock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>เห็นเฉพาะคุณ ไม่แชร์ให้คู่</span>';
   function sxHTML() {
     const R = sxReview(logs(), prof(), TODAY);
     const alert = a => '<div class="hz-alert" data-tone="' + a.tone + '" role="note"><span class="hz-at">' + esc(a.title) + '</span><ul>' + a.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
     let h = '<section class="card stack" id="sxCard"><div class="hz-head"><h2>สุขอนามัยทางเพศ</h2>' + LOCK + '</div>';
-    if (!R.rows.length) h += '<p class="muted">บันทึกได้ว่าหลังมีเพศสัมพันธ์หรือกิจกรรมส่วนตัว รู้สึกเจ็บ ระคายเคือง หรือพึงพอใจแค่ไหน และป้องกันอย่างไร แอพจะเช็กความเสี่ยงตั้งครรภ์และการติดเชื้อให้</p>';
-    else {
+    if (R.rows.length) {
       const n14 = R.rows.filter(r => r.ago <= 14).length;
       h += '<p class="muted">บันทึก ' + R.rows.length + ' ครั้งใน 3 เดือน' + (n14 ? ' (' + n14 + ' ครั้งใน 14 วันล่าสุด)' : '') + '</p>';
       h += R.alerts.map(alert).join('');
@@ -1525,15 +1528,15 @@ function summaryText(logs, profile, today, A) {
         h += '<div class="sx-phase"><span class="label">ความพึงพอใจเฉลี่ยตามช่วงรอบเดือน</span>' + order.filter(k => R.sat.some(x => x.ph === k)).map(k => {
           const x = R.sat.find(y => y.ph === k);
           return '<div class="sx-row"><span>' + HZ_PHASE[k][0] + '</span><div class="hz-track"><i style="width:' + (x.avg / 5 * 100).toFixed(0) + '%;background:var(--accent)"></i></div><b>' + x.avg.toFixed(1) + '</b></div>';
-        }).join('') + '<p class="hz-note">จากคะแนน 1-5 ที่บันทึกไว้ ยิ่งบันทึกมาก ยิ่งเห็นแนวโน้มของตัวเองชัด</p></div>';
+        }).join('') + '</div>';
       }
     }
     return h + '<button type="button" class="btn outline block" data-act="sx-open">บันทึกส่วนตัววันนี้</button>'
-      + '<p class="hz-note">คำแนะนำนี้คำนวณในแอพจากสิ่งที่คุณบันทึก ไม่ได้ส่งให้ AI หรือใครอ่าน และไม่แทนการตรวจโดยแพทย์</p></section>';
+      + '</section>';
   }
   function setupHTML() {
     const p = S.profile;
-    return '<section class="card stack"><h2>เริ่มจากประจำเดือนครั้งล่าสุด</h2><p class="muted">ใส่ 3 อย่างนี้ Cozy จะเริ่มนับวันให้ทันที ถ้าจำไม่ได้แน่ชัด ใส่ค่าประมาณก่อนได้</p>'
+    return '<section class="card stack"><h2>เริ่มจากประจำเดือนครั้งล่าสุด</h2>'
       + '<div class="field"><label class="label" for="suLast">วันแรกของประจำเดือนครั้งล่าสุด</label><input class="input" type="date" id="suLast" max="' + TODAY + '"></div>'
       + '<div><div class="row"><label for="suCycle">เว้นกี่วันถึงมาอีก</label><span class="row-in"><input class="input num" id="suCycle" type="number" inputmode="numeric" min="15" max="90" value="' + esc(p.cycleLen) + '"><span class="unit">วัน</span></span></div>'
       + '<div class="row"><label for="suPeriod">มาครั้งละ</label><span class="row-in"><input class="input num" id="suPeriod" type="number" inputmode="numeric" min="1" max="14" value="' + esc(p.periodLen) + '"><span class="unit">วัน</span></span></div></div>'
@@ -1652,7 +1655,6 @@ function summaryText(logs, profile, today, A) {
       h += detailHTML(C);
     }
     if (S.paired.length) h += '<section class="card stack"><h2>คนที่คุณดูแล</h2><div class="stack" id="homePaired">' + pairedHTML(false) + '</div></section>';
-    h += '<p class="small muted center">Cozy ช่วยคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค</p>';
     $('#v-home').innerHTML = h;
   }
 
@@ -1713,7 +1715,7 @@ function summaryText(logs, profile, today, A) {
       h += '<div class="hosp"><div><strong>' + esc(p.hospName || 'โรงพยาบาลของฉัน') + '</strong>' + (p.hospPhone ? '<div class="phone">' + esc(p.hospPhone) + '</div>' : '') + '</div>'
         + (tel ? '<div class="inline"><button type="button" class="btn" data-act="copy" data-copy="' + esc(p.hospPhone) + '">คัดลอกเบอร์</button><a class="btn primary" href="tel:' + esc(tel) + '">โทร</a></div>' : '') + '</div>';
     } else {
-      h += '<p class="small muted">ยังไม่ได้ใส่โรงพยาบาลประจำ ใส่ไว้ครั้งเดียว ชื่อและเบอร์จะขึ้นตรงนี้ให้โทรได้ทันที</p><button type="button" class="btn" data-act="goto-hosp">ตั้งค่าโรงพยาบาลของฉัน</button>';
+      h += '<button type="button" class="btn" data-act="goto-hosp">ตั้งค่าโรงพยาบาลของฉัน</button>';
     }
     if (p.homeArea || p.homeLat) h += '<a class="btn" href="' + esc(mapsUrl(p.homeArea)) + '" target="_blank" rel="noopener">ค้นหาโรงพยาบาลใกล้บ้านใน Google Maps</a>';
     return h + hotlines(false) + '</section>';
@@ -1722,7 +1724,7 @@ function summaryText(logs, profile, today, A) {
   let nearPos = null;
   const nearUrl = pos => 'https://www.google.com/maps/search/' + encodeURIComponent('โรงพยาบาล') + '/@' + pos.lat + ',' + pos.lng + ',14z';
   function nearHTML(state) {
-    if (nearPos) return '<a class="btn primary" href="' + esc(nearUrl(nearPos)) + '" target="_blank" rel="noopener">เปิดแผนที่โรงพยาบาลรอบตัวฉัน ›</a><p class="small muted">ใช้ตำแหน่งตอนนี้ ไม่ได้บันทึกเก็บไว้</p>';
+    if (nearPos) return '<a class="btn primary" href="' + esc(nearUrl(nearPos)) + '" target="_blank" rel="noopener">เปิดแผนที่โรงพยาบาลรอบตัวฉัน ›</a>';
     if (state === 'busy') return '<button type="button" class="btn primary" disabled>กำลังหาตำแหน่ง…</button>';
     return '<button type="button" class="btn primary" data-act="near-now">ค้นหาโรงพยาบาลใกล้ฉันตอนนี้</button>'
       + (state === 'fail' ? '<p class="small muted">หาตำแหน่งไม่ได้ ลองเปิดการเข้าถึงตำแหน่งให้ Safari หรือกดลิงก์นี้แทน</p><a class="btn" href="https://www.google.com/maps/search/' + encodeURIComponent('โรงพยาบาลใกล้ฉัน') + '" target="_blank" rel="noopener">ค้นหาใน Google Maps</a>' : '');
@@ -1756,21 +1758,21 @@ function summaryText(logs, profile, today, A) {
     });
     h += '<div class="inline wide"><button type="button" class="btn" data-act="copy-summary">คัดลอกสรุปให้หมอ</button><button type="button" class="btn" data-act="ask-result">ให้พี่โคซี่สรุปผลนี้</button></div>';
     h += '<details><summary>ดูข้อความสรุปที่จะคัดลอก</summary><pre class="sum" id="sumText">' + esc(summaryText(logs(), prof(), TODAY, A)) + '</pre></details>';
-    h += '<p class="small muted center">ผลนี้คัดกรองจากสิ่งที่คุณบันทึก รายการ "อาจเกี่ยวข้องกับ" คือสิ่งที่แพทย์มักตรวจหา ไม่ได้แปลว่าคุณเป็นโรคนั้น</p>';
+    h += '<p class="small muted center">ผลคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค</p>';
     h += hospHTML('nearCard');
     return h;
   }
   let missDur = null, missTicks = null;
   function missOutHTML() {
-    if (missDur === null) return '<p class="muted center">เลือกระยะเวลาด้านบนเพื่อดูคำแนะนำ</p>';
+    if (missDur === null) return '';
     const G = missGuide(missDur, missTicks, S.started ? S.profile : {});
     const desc = G.level === 2 ? 'ควรนัดพบแพทย์เพื่อหาสาเหตุ' : G.level === 1 ? 'ยังรอดูได้ แต่มีสิ่งที่ควรทำตามขั้นตอนด้านล่าง' : 'ยังไม่ถือว่าขาด มาช้าบ้างเป็นเรื่องปกติ';
     let h = '<section class="status" data-level="' + G.level + '"><div class="status-row">' + mascot(levelMood(G.level)) + '<div><div class="status-title">' + LEVELS[G.level] + '</div><p>' + desc + '</p></div></div></section>';
     h += '<section class="card stack"><h2>อาจเป็นอะไร</h2><dl class="why">' + G.causes.map(c => '<dt>' + esc(c[0]) + '</dt><dd>' + esc(c[1]) + '</dd>').join('') + '</dl></section>';
-    h += '<section class="card stack"><h2>ต้องทำยังไง</h2><ol class="steps">' + G.steps.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>' + (G.why ? '<p class="small muted">' + esc(G.why) + '</p>' : '') + '</section>';
+    h += '<section class="card stack"><h2>ต้องทำยังไง</h2><ol class="steps">' + G.steps.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>' + '</section>';
     if (G.level >= 2) h += hospHTML();
     h += '<button type="button" class="btn block" data-act="ask-miss">ถามพี่โคซี่เรื่องเมนไม่มา</button>';
-    return h + '<p class="small muted center">คำแนะนำเบื้องต้น ไม่ใช่การวินิจฉัยโรค</p>';
+    return h;
   }
   function missHTML() {
     const C = cycleInfo(logs(), prof(), TODAY);
@@ -2012,7 +2014,7 @@ function summaryText(logs, profile, today, A) {
   const TIERS = [
     { id: 'free', name: 'ฟรี', price: 'ฟรีตลอด', items: ['ปฏิทินและนับวันประจำเดือน', 'บันทึกอาการ ผลวิเคราะห์ และตัวช่วยเมนไม่มา', 'กราฟฮอร์โมนและบันทึกสุขอนามัยทางเพศ', 'พี่โคซี่ตอบหัวข้อฟรี และจับคู่กับคนใกล้ชิด'] },
     { id: 'plus', name: 'Cozy Plus', price: baht(PRICES.plus), items: ['ทุกอย่างในแพ็กเกจฟรี', 'ถามพี่โคซี่ได้ทุกเรื่อง', 'ส่งรูปให้ AI ช่วยดู เช่น สิว ผื่น', 'คำตอบเจาะจงจากบันทึกของคุณ'] },
-    { id: 'premium', name: 'Cozy Premium', price: baht(PRICES.premium), best: true, items: ['ทุกอย่างใน Plus', 'โทรปรึกษาแพทย์', 'สะสมโทเคนทุกเดือน แลกของได้ เช่น ผ้าอนามัยจากตู้แลก'] },
+    { id: 'premium', name: 'Cozy Premium', price: baht(PRICES.premium), best: true, items: ['ทุกอย่างใน Plus', 'โทรปรึกษาแพทย์', 'สะสมโทเคนทุกเดือน แลกส่วนลดร้านพาร์ทเนอร์'] },
     { id: 'family', name: 'Family Premium', price: baht(PRICES.family), items: ['ทุกอย่างใน Premium', 'ใช้ได้สูงสุด ' + PRICES.familySeats + ' คน แต่ละคนมีบัญชีและข้อมูลแยกกัน', 'ชวนเพื่อนหรือครอบครัวเข้ากลุ่มด้วยอีเมล'] }
   ];
   const curTier = () => S.profile.tier || 'free';
@@ -2023,10 +2025,10 @@ function summaryText(logs, profile, today, A) {
       return '<div class="tier' + (cur ? ' cur' : t.best ? ' best' : '') + '"><div class="tier-h"><strong>' + t.name + '</strong><span class="tier-p">' + t.price + '</span></div>'
         + (t.id === 'family' && save > 0 ? '<span class="save">ถูกกว่า Premium ' + PRICES.familySeats + ' คน (' + solo.toLocaleString('th-TH') + ' บาท) ประหยัด ' + save.toLocaleString('th-TH') + ' บาท / เดือน</span>' : '')
         + '<ul>' + t.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>'
-        + (t.id === 'premium' ? '<div class="rewards"><span class="small muted">ตัวอย่างของที่แลกได้</span>' + REWARDS.map(r => '<div class="reward"><span>' + esc(r[0]) + '</span><b>' + r[1] + ' โทเคน</b></div>').join('') + '</div>' : '')
+        + ''
         + (cur ? '<span class="pill">แพ็กเกจปัจจุบัน</span>' : t.id === 'free' ? '' : '<button type="button" class="btn ' + (want ? '' : 'primary ') + 'block" data-act="tier-join" data-tier="' + t.id + '">' + (want ? 'บันทึกแล้วว่าสนใจ' : 'สมัคร ' + t.name) + '</button>')
         + '</div>';
-    }).join('') + '</div><p class="small muted" id="tierNote">ยังไม่เปิดรับสมัคร และยังไม่มีการเก็บเงินใดๆ กดสมัครเพื่อบอกว่าคุณสนใจได้</p>';
+    }).join('') + '</div><p class="small muted" id="tierNote">ยังไม่เปิดรับสมัคร ยังไม่มีการเก็บเงิน</p>';
   }
   function openPlus() {
     $('#plusPrice').textContent = '';
@@ -2104,7 +2106,6 @@ function summaryText(logs, profile, today, A) {
       const curId = getDeviceId();
       const devs = S.profile.devices && S.profile.devices.length ? S.profile.devices : [{ id: curId, label: getDeviceLabel(), lastActive: 'ตอนนี้' }];
       box.innerHTML = '<div class="inline"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>อุปกรณ์ที่เข้าสู่ระบบ</h2></div>'
-        + '<p class="small muted">รายการอุปกรณ์ที่เคยเข้าสู่ระบบบัญชี Cozy ของคุณ</p>'
         + '<div class="stack">' + devs.map(d => {
           const isCur = d.id === curId;
           return '<div class="dev-item"><div class="dev-head"><strong>' + esc(d.label) + '</strong>' + (isCur ? '<span class="pill">เครื่องนี้</span>' : '<button type="button" class="btn sm" data-act="remove-device" data-did="' + esc(d.id) + '">นำออก</button>') + '</div><span class="small muted">ใช้งานล่าสุด: ' + esc(isCur ? 'กำลังใช้งานอยู่' : (d.lastActive || '-')) + '</span></div>';
@@ -2124,7 +2125,7 @@ function summaryText(logs, profile, today, A) {
           + '<div class="field"><label class="label" for="newPassIn">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label><input class="input" id="newPassIn" type="password" autocomplete="new-password"></div>'
           + '<p class="small err" id="secErr" hidden></p>'
           + '<button type="button" class="btn primary block" id="btnChangePass" data-act="change-pass">บันทึกรหัสผ่านใหม่</button>'
-          : '<p class="small muted">บัญชีนี้เชื่อมต่อผ่าน Google สามารถจัดการรหัสผ่านและความปลอดภัยเพิ่มเติมได้ที่บัญชี Google ของคุณ</p>')
+          : '')
         + '</div>')
         + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
     } else if (acctView === 'membership') {
@@ -2132,7 +2133,7 @@ function summaryText(logs, profile, today, A) {
       box.innerHTML = '<div class="back-row"><button type="button" class="btn sm" data-act="acct-sub" data-sub="main">‹ กลับ</button><h2>โปรแกรมสมาชิก</h2></div>'
         + '<div class="card stack"><div class="inline" style="justify-content:space-between"><h3>สถานะปัจจุบัน</h3><span class="pill">' + T.name + '</span></div>'
         + '<div class="inline" style="justify-content:space-between"><span class="muted">โทเคนสะสม</span><strong>' + (num(S.profile.tokens) || 0) + ' โทเคน</strong></div>'
-        + '<p class="small muted">สมาชิก Premium และ Family Premium สะสมโทเคนเพื่อแลกของได้</p></div>'
+        + '</div>'
         + tiersHTML()
         + '<button type="button" class="btn block" data-act="sheet-close" data-close>ปิด</button>';
     }
@@ -2342,13 +2343,11 @@ function summaryText(logs, profile, today, A) {
     h += '<section class="card stack"><h2>รอบเดือนของฉัน</h2><div>'
       + row('pPerMonth', 'ประจำเดือนมาเดือนละ', p.perMonth, 'ครั้ง', 'min="0" max="6"') + row('pCycleLen', 'เว้นกี่วันถึงมาอีก', p.cycleLen, 'วัน', 'min="15" max="90"') + row('pPeriodLen', 'มาครั้งละ', p.periodLen, 'วัน', 'min="1" max="14"')
       + '</div><div class="field"><label class="label" for="pLastStart">วันแรกของประจำเดือนครั้งล่าสุด</label><input class="input" type="date" id="pLastStart" max="' + TODAY + '" value="' + (C.last ? C.last.start : '') + '"></div>'
-      + '<p class="small muted">เว้นกี่วัน นับจากวันแรกของรอบนี้ถึงวันแรกของรอบถัดไป ปกติอยู่ที่ 21-35 วัน เมื่อบันทึกครบ 2 รอบ Cozy จะใช้ค่าเฉลี่ยจริงของคุณแทน</p>'
       + '<button type="button" class="btn primary" data-act="save-profile">บันทึกข้อมูล</button></section>';
-    h += '<section class="card stack" id="hospCard"><h2>โรงพยาบาลของฉัน</h2><p class="muted">ชื่อและเบอร์นี้จะขึ้นให้ทันทีเมื่อผลวิเคราะห์บอกว่าควรพบแพทย์</p>'
+    h += '<section class="card stack" id="hospCard"><h2>โรงพยาบาลของฉัน</h2>'
       + '<div class="field"><span class="label">ตำแหน่งบ้าน</span><div class="stack" id="geoBox" style="gap:8px">' + geoHTML() + '</div></div>'
       + '<div class="field"><label class="label" for="pHomeArea">หรือพิมพ์พื้นที่บ้าน</label><input class="input" id="pHomeArea" value="' + esc(p.homeArea) + '" placeholder="เช่น ลาดพร้าว กรุงเทพฯ หรือรหัสไปรษณีย์" maxlength="80"></div>'
       + '<a class="btn" id="mapsLink" href="' + esc(mapsUrl(p.homeArea)) + '" target="_blank" rel="noopener">ค้นหาโรงพยาบาลใกล้บ้านใน Google Maps</a>'
-      + '<p class="small muted">Google Maps จะแสดงโรงพยาบาลรอบบ้านพร้อมเบอร์โทรและระยะทาง เลือกที่สะดวกแล้วกลับมาใส่ไว้ด้านล่าง</p>'
       + '<div class="field"><label class="label" for="pHospName">ชื่อโรงพยาบาลหรือคลินิก</label><input class="input" id="pHospName" value="' + esc(p.hospName) + '" maxlength="80"></div>'
       + '<div class="field"><label class="label" for="pHospPhone">เบอร์ติดต่อ</label><input class="input" id="pHospPhone" type="tel" inputmode="tel" value="' + esc(p.hospPhone) + '" maxlength="30"></div>'
       + '<button type="button" class="btn primary" data-act="save-hosp">บันทึกโรงพยาบาล</button>' + hotlines(true) + '</section>';
@@ -2361,7 +2360,7 @@ function summaryText(logs, profile, today, A) {
   }
   function renderPair() {
     $('#v-pair').innerHTML = '<section class="card stack"><h2>รหัสของฉัน</h2><div class="stack" id="shareBox"></div></section>'
-      + '<section class="card stack"><h2>ใส่รหัสของคนใกล้ชิด</h2><p class="muted">ใส่รหัสที่แฟนหรือคนในครอบครัวส่งมา เพื่อดูสถานะของเขา</p>'
+      + '<section class="card stack"><h2>ใส่รหัสของคนใกล้ชิด</h2>'
       + '<div class="inline"><input class="input" id="pairCode" style="flex:1" placeholder="เช่น 123-ADC" aria-label="รหัสจับคู่" autocapitalize="characters" autocomplete="off" maxlength="12"><button type="button" class="btn primary" data-act="pair">จับคู่</button></div>'
       + '<div class="stack" id="pairedList">' + pairedHTML(true) + '</div>'
       + (S.paired.length ? '<button type="button" class="btn sm" data-act="pair-refresh">รีเฟรชสถานะ</button>' : '') + '</section>';
@@ -2370,7 +2369,7 @@ function summaryText(logs, profile, today, A) {
   function renderShare() {
     const box = $('#shareBox'); if (!box) return;
     const sh = S.profile.share;
-    let h = '<p class="muted">เปิดแชร์แล้วส่งรหัสให้แฟนหรือครอบครัว เขาจะเห็นแค่สถานะของคุณ ไม่เห็นบันทึกรายวันหรือแชต</p>';
+    let h = '<p class="muted">คนที่จับคู่จะเห็นแค่สถานะ ไม่เห็นบันทึกรายวันหรือแชต</p>';
     if (cloud.state !== 'in') h += '<button type="button" class="btn primary" data-act="start">สมัคร / เข้าสู่ระบบเพื่อใช้การจับคู่</button>';
     else {
       h += '<div class="switch-row"><span class="label" id="shLabel">เปิดการแชร์</span><button type="button" class="switch" role="switch" aria-checked="' + sh.on + '" aria-labelledby="shLabel" data-act="share-toggle"></button></div>';
@@ -2380,7 +2379,6 @@ function summaryText(logs, profile, today, A) {
           + '<label class="check"><input type="checkbox" id="shDetails"' + (sh.details ? ' checked' : '') + '><span>แชร์หัวข้อของสิ่งที่พบด้วย เช่น "ประจำเดือนเลยกำหนดมา 9 วัน"</span></label>'
           + '<label class="check"><input type="checkbox" id="shNext"' + (sh.next ? ' checked' : '') + '><span>แชร์วันที่คาดว่าประจำเดือนรอบถัดไปจะมา</span></label>'
           + '<label class="check"><input type="checkbox" id="shMood"' + (sh.mood ? ' checked' : '') + '><span>แชร์แนวโน้มอารมณ์ทางเพศตามฮอร์โมน เช่น "สูง · ช่วงไข่ตก" (ไม่แชร์บันทึกส่วนตัว)</span></label>'
-          + '<p class="small muted">วิธีใช้: ส่งลิงก์แอพและรหัสนี้ให้เขา ให้เขาสมัครสมาชิก เปิดแท็บ จับคู่ แล้วใส่รหัสของคุณ</p>'
           + '<button type="button" class="btn sm" data-act="share-regen">สร้างรหัสใหม่ (รหัสเดิมจะใช้ไม่ได้)</button>';
       }
     }
@@ -2485,6 +2483,7 @@ function summaryText(logs, profile, today, A) {
       closeSheets();
     }
     else if (act === 'acct-open') openAcctSheet('main');
+    else if (act === 'tok-open') openAcctSheet('membership');
     else if (act === 'acct-sub') openAcctSheet(t.dataset.sub);
     else if (act === 'save-acct-nick') {
       const n = val('acctNickInput').slice(0, 30);
